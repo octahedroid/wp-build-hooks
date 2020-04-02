@@ -1,0 +1,15 @@
+{
+  "name": "octahedroid/wordpress-build-hooks",
+  "description": "This module allows you to trigger a build hook on any service provider that supports build hooks.",
+  "type": "wordpress-plugin",
+  "license": "GPL-3.0+",
+  "authors": [
+    {
+      "name": "Octahedroid",
+      "email": "hq@octahedroid.com"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^6.5"
+  }
+}
