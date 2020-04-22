@@ -200,9 +200,18 @@ function circle_ci_pipeline() {
   );
 
   $client = get_client();
-  $response = $client->get($url);
-  $data = json_decode($response->getBody()->getContents(), TRUE);
-  $pipelines = array_chunk( $data['items'], 10)[0];
+  $pipelines = [];
+  try {
+    $response = $client->get($url);
+    $response_body = json_decode($response->getBody()->getContents(), TRUE);
+    if($response_body['items']){
+      $pipelines = array_chunk( $response_body['items'], 10)[0];
+    }
+  } catch (\Throwable $th) {
+    $result = new WP_Error( 'broke', __( $th->getMessage(), "build_hooks" ) );
+    echo $result->get_error_message();
+  }
+  
   $workflows = [];
   foreach ($pipelines as $key => $item) {
     $pipeline_url = str_replace(
@@ -216,15 +225,21 @@ function circle_ci_pipeline() {
       ],
       'https://circleci.com/api/v2/pipeline/{id}/workflow?circle-token={token}'
     );
-
-    $pipeline_response = $client->get($pipeline_url);
-    $pipeline_data = json_decode($pipeline_response->getBody()->getContents(), TRUE);
-    foreach ($pipeline_data['items'] as $key => $pipeline_item) {
-      $workflows[] = [
-        'id' => $pipeline_item['id'],
-        'url' => circle_ci_worklflow_link($pipeline_item['pipeline_number'], $pipeline_item['id']),
-        'status' => $pipeline_item['status'],
-      ];
+    try {
+      $pipeline_response = $client->get($pipeline_url);
+      $pipeline_data = json_decode($pipeline_response->getBody()->getContents(), TRUE);
+      if($pipeline_data['items']){
+        foreach ($pipeline_data['items'] as $key => $pipeline_item) {
+          $workflows[] = [
+            'id' => $pipeline_item['id'],
+            'url' => circle_ci_worklflow_link($pipeline_item['pipeline_number'], $pipeline_item['id']),
+            'status' => $pipeline_item['status'],
+          ];
+        }
+      }
+    } catch (\Throwable $th) {
+      $result = new WP_Error( 'broke', __( $th->getMessage(), "build_hooks" ) );
+      echo $result->get_error_message();
     }
   }
 
@@ -256,16 +271,6 @@ function register_web_hooks_admin_page()
   }
 }
 
-if (isset($_POST['action'])) {
-    if ($_POST['action'] === 'update_option_build_hooks') {
-        setOptionsPantheon($_POST);
-    }
-
-    if ($_POST['action'] === 'trigger_build') {
-        trigger_build();
-    }
-}
-
 function setOptionsPantheon($data)
 {
     $type = $data[BUILD_HOOK_TYPE_OPTION]?$data[BUILD_HOOK_TYPE_OPTION]:null;
@@ -289,6 +294,16 @@ function setOptionsPantheon($data)
 
 function build_hooks()
 {
+  if (isset($_POST['action'])) {
+    if ($_POST['action'] === 'update_option_build_hooks') {
+        setOptionsPantheon($_POST);
+    }
+
+    if ($_POST['action'] === 'trigger_build') {
+        $result_build = trigger_build();
+
+    }
+  }
   $type = get_option(BUILD_HOOK_TYPE_OPTION);
   $url = build_hook_option();
   if ($type === 'circle_ci') {
@@ -307,6 +322,11 @@ function build_hooks()
 
   ?>
     <div class="wrap">
+      <?php if(is_string($result_build)){ ?>
+        <div class="error notice">
+          <p><?php echo $result_build; ?></p>
+      </div>
+      <?php } ?>
       <h1>Build Hooks</h1>
       ​<hr />
       <?php if($type): ?>
@@ -527,10 +547,15 @@ function trigger_build()
     $options = $ci_options['options'];
   }
   $client = get_client();
-  $response = $client->post($url, $options);
-  $data = json_decode($response->getBody()->getContents(), TRUE);
-  $workflow = $data['workflows']['workflow_id'];
-  update_option(BUILD_HOOK_CIRCLECI_WORKFLOW, $workflow);
+  try {
+    $response = $client->post($url, $options);
+    $data = json_decode($response->getBody()->getContents(), TRUE);
+    $workflow = $data['workflows']['workflow_id'];
+    update_option(BUILD_HOOK_CIRCLECI_WORKFLOW, $workflow);
+  } catch (\Throwable $th) {
+    $result = new WP_Error( 'broke', __( $th->getMessage(), "build_hooks" ) );
+    return $result->get_error_message();
+  }
 }
 
 function get_client() {
