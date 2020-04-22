@@ -23,6 +23,7 @@ const BUILD_HOOK_CIRCLECI_JOB_TOKEN = '_build_hooks_circle_ci_token';
 const BUILD_HOOK_CIRCLECI_WORKFLOW = '_build_hooks_circle_ci_workflow';
 const BUILD_HOOK_SETTINGS_OPTION = '_build_hooks_settings';
 const BUILD_HOOK_TRIGGER_OPTION ='_build_hooks_trigger';
+const BUILD_HOOK_SECRET_FILE_PATH = WP_CONTENT_DIR.'/uploads/private/secrets.json';
 
 function build_hook_option() {
   $type = get_option(BUILD_HOOK_TYPE_OPTION);
@@ -65,25 +66,42 @@ function trigger_option() {
   return in_array(current_user_role(), $trigger);
 }
 
-function get_secret($token_name) {
-  $secrets_file = file_get_contents(WP_CONTENT_DIR.'/uploads/private/secrets.json');
-  $json_data = json_decode($secrets_file, true);
+function get_secret_file()
+{
+  $secret_file_path = BUILD_HOOK_SECRET_FILE_PATH;
+  if(file_exists($secret_file_path)){
+    return file_get_contents($secret_file_path);
+  }
+  return false;
+}
 
-  return $json_data[$token_name];
+function get_secret($token_name) {
+  $secrets_file = get_secret_file();
+  if($secrets_file){
+    $json_data = json_decode($secrets_file, true);
+    return $json_data[$token_name];
+  }
+  return false;
 }
 
 function set_secret($token_name, $token_value) {
-  $file_path = WP_CONTENT_DIR.'/uploads/private/secrets.json';
-  $file_content = file_get_contents($file_path);
-  $json_data = json_decode($file_content, true);
+  $secrets_file = get_secret_file();
+  if(!$secrets_file){
+    $file = fopen(BUILD_HOOK_SECRET_FILE_PATH, 'w');
+    fclose($file);
+    $secrets_file = get_secret_file();
+  }
+  
+  $json_data = json_decode($secrets_file, true);
   $json_data[$token_name] = $token_value;
-
-  return file_put_contents($file_path, json_encode($json_data));
+  return file_put_contents(BUILD_HOOK_SECRET_FILE_PATH, json_encode($json_data));
+  
 }
 
 function circle_ci_options($obfuscate = true) {
   $template = 'https://circleci.com/api/v1.1/project/{provider}/{repo}/tree/{branch}?circle-token={token}';
   $token = get_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME);
+  
   if ($obfuscate) {
     $stars = str_repeat('*', strlen($token)-4);
     $token = substr_replace($token, $stars, 2, -2);  
@@ -401,7 +419,6 @@ function build_hooks_settings()
                 <fieldset>
                   <legend class="screen-reader-text">Webhook</legend>
                   <input type="text" class="full-input" name="<?php echo BUILD_HOOK_OPTION.$type ?>" value="<?php echo $url ?>" size="96">
-                  <p class="description" id="webhooks-description">Please provide the url to send a POST request and trigger a new build whenever you publish content. <br/>E.g.: <em>https://api.provider.com/build_hooks/XcXdfa587588ddb1b80c5XXx</em></p>
                 </fieldset>
               </td>
             </tr>
@@ -414,7 +431,6 @@ function build_hooks_settings()
                 <fieldset>
                   <legend class="screen-reader-text">Repository</legend>
                   <input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_REPO_OPTION ?>" value="<?php echo $circleci_repo ?>" size="96">
-                  <p class="description" id="circle_ci-description">Please provide your repository information. E.g.: <em>my-github-username/my-github-repo-name</em></p>
                 </fieldset>
               </td>
             </tr>
@@ -424,7 +440,6 @@ function build_hooks_settings()
                 <fieldset>
                   <legend class="screen-reader-text">Job</legend>
                   <input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_OPTION ?>" value="<?php echo $circleci_job ?>" size="96">
-                  <p class="description" id="circle_ci-description">Plase provide the name of the job in charge to build your static site. <br />E.g.: <em>build</em></p>
                 </fieldset>
               </td>
             </tr>
@@ -434,7 +449,6 @@ function build_hooks_settings()
                 <fieldset>
                   <legend class="screen-reader-text">Token</legend>
                   <input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_TOKEN ?>" value="<?php echo $circleci_token ?>" size="96">
-                  <p class="description" id="circle_ci-description">Please provide the api token for Circle CI, for more information please go to <a href="https://circleci.com/docs/2.0/managing-api-tokens/" >Managing API Tokens</a></p>
                 </fieldset>
               </td>
             </tr>
