@@ -79,7 +79,7 @@ function get_secret($token_name) {
   $secrets_file = get_secret_file();
   if($secrets_file){
     $json_data = json_decode($secrets_file, true);
-    return $json_data[$token_name];
+    return $json_data[$token_name]?$json_data[$token_name]:false;
   }
   return false;
 }
