@@ -208,7 +208,7 @@ function circle_ci_pipeline() {
       $pipelines = array_chunk( $response_body['items'], 10)[0];
     }
   } catch (\Throwable $th) {
-    $result = new WP_Error( 'broke', __( $th->getMessage(), "build_hooks" ) );
+    $result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', "build_hooks" ) );
     echo $result->get_error_message();
   }
   
@@ -238,7 +238,7 @@ function circle_ci_pipeline() {
         }
       }
     } catch (\Throwable $th) {
-      $result = new WP_Error( 'broke', __( $th->getMessage(), "build_hooks" ) );
+      $result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', "build_hooks" ) );
       echo $result->get_error_message();
     }
   }
@@ -553,7 +553,7 @@ function trigger_build()
     $workflow = $data['workflows']['workflow_id'];
     update_option(BUILD_HOOK_CIRCLECI_WORKFLOW, $workflow);
   } catch (\Throwable $th) {
-    $result = new WP_Error( 'broke', __( $th->getMessage(), "build_hooks" ) );
+    $result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', "build_hooks" ) );
     return $result->get_error_message();
   }
 }
