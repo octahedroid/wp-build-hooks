@@ -24,6 +24,7 @@ const BUILD_HOOK_CIRCLECI_WORKFLOW = '_build_hooks_circle_ci_workflow';
 const BUILD_HOOK_SETTINGS_OPTION = '_build_hooks_settings';
 const BUILD_HOOK_TRIGGER_OPTION ='_build_hooks_trigger';
 const BUILD_HOOK_SECRET_FILE_PATH = WP_CONTENT_DIR.'/uploads/private/secrets.json';
+const BUILD_HOOK_SECRET_DIRECTORY_NAME = WP_CONTENT_DIR . '/uploads/private';
 
 function build_hook_option() {
   $type = get_option(BUILD_HOOK_TYPE_OPTION);
@@ -84,18 +85,40 @@ function get_secret($token_name) {
   return false;
 }
 
-function set_secret($token_name, $token_value) {
-  $secrets_file = get_secret_file();
-  if(!$secrets_file){
-    $file = fopen(BUILD_HOOK_SECRET_FILE_PATH, 'w');
-    fclose($file);
-    $secrets_file = get_secret_file();
+function create_secret_file(){
+  $create_path = wp_mkdir_p(BUILD_HOOK_SECRET_DIRECTORY_NAME);
+    if(!$create_path){
+      throw new Exception("Fail to create private folder", 1);
+    }
+  $file = file_put_contents(BUILD_HOOK_SECRET_FILE_PATH, '');
+    if ($file===false) {
+      throw new Exception("Fail to create secret token file", 1);
+    }else{
+      return get_secret_file();
+    }
+  
+}
+
+function set_secret($token_name, $token_value)
+{
+  if(!$token_value) {
+    return;
   }
-  
-  $json_data = json_decode($secrets_file, true);
-  $json_data[$token_name] = $token_value;
-  return file_put_contents(BUILD_HOOK_SECRET_FILE_PATH, json_encode($json_data));
-  
+
+    $secrets_file = get_secret_file();
+    if (!$secrets_file) {
+      try {
+        $secrets_file = create_secret_file();
+
+      } catch (\Throwable $th) {
+        $result = new WP_Error( 'broke', __( 'Token could not be saved', "build_hooks" ) );
+        echo $result->get_error_message();
+      }
+    } 
+    $json_data = json_decode($secrets_file, true);
+    $json_data[$token_name] = $token_value;
+    file_put_contents(BUILD_HOOK_SECRET_FILE_PATH, json_encode($json_data));
+    
 }
 
 function circle_ci_options($obfuscate = true) {
@@ -289,21 +312,24 @@ function setOptionsPantheon($data)
     } else {
       $web_hook = $data[BUILD_HOOK_OPTION.$type]?$data[BUILD_HOOK_OPTION.$type]:null;
       update_option(BUILD_HOOK_OPTION.$type, $web_hook);
+      clean_secret_token();
     }
 }
-
-function build_hooks()
-{
+function add_hook_actions(){
   if (isset($_POST['action'])) {
     if ($_POST['action'] === 'update_option_build_hooks') {
         setOptionsPantheon($_POST);
     }
 
     if ($_POST['action'] === 'trigger_build') {
-        $result_build = trigger_build();
-
+        trigger_build();
     }
   }
+}
+add_action( 'init', 'add_hook_actions', 10 );
+
+function build_hooks()
+{
   $type = get_option(BUILD_HOOK_TYPE_OPTION);
   $url = build_hook_option();
   if ($type === 'circle_ci') {
@@ -322,11 +348,6 @@ function build_hooks()
 
   ?>
     <div class="wrap">
-      <?php if(is_string($result_build)){ ?>
-        <div class="error notice">
-          <p><?php echo $result_build; ?></p>
-      </div>
-      <?php } ?>
       <h1>Build Hooks</h1>
       ​<hr />
       <?php if($type): ?>
@@ -566,3 +587,31 @@ function get_client() {
     ],
   ]);
 }
+
+function clean_secret_token()
+{
+  $secrets_file = get_secret_file();
+  if($secrets_file){
+    $json_data = json_decode($secrets_file, true);
+    unset($json_data[BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME]);
+    $clean_json_data = json_encode($json_data, true);
+    file_put_contents(BUILD_HOOK_SECRET_FILE_PATH, $clean_json_data);
+  }
+}
+function clear_options_pantheon(){
+  delete_option(BUILD_HOOK_TYPE_OPTION);
+  delete_option(BUILD_HOOK_SETTINGS_OPTION);
+  delete_option(BUILD_HOOK_TRIGGER_OPTION);
+  delete_option(BUILD_HOOK_CIRCLECI_REPO_OPTION);
+  delete_option(BUILD_HOOK_CIRCLECI_JOB_OPTION);
+  foreach (BUILD_HOOK_TYPES as $key => $value) { 
+    delete_option(BUILD_HOOK_OPTION.$key);
+  } 
+  clean_secret_token();
+}
+
+// And here goes the deactivationation function:
+function on_build_hooks_deactivation(){
+  clear_options_pantheon();
+}
+register_deactivation_hook( __FILE__, 'on_build_hooks_deactivation' );
