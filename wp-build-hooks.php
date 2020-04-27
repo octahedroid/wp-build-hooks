@@ -629,7 +629,6 @@ function clear_options_pantheon()
 	clean_secret_token();
 }
 
-// And here goes the deactivationation function:
 function on_build_hooks_deactivation()
 {
 	clear_options_pantheon();
