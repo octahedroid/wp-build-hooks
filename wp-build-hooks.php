@@ -477,6 +477,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Webhook</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_OPTION . $type ?>" value="<?php echo $url ?>" size="96">
+                  <p class="description" id="webhooks-description">Please provide the url to send a POST request and trigger a new build whenever you publish content. <br/>E.g.: <em>https://api.provider.com/build_hooks/XcXdfa587588ddb1b80c5XXx</em></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -489,6 +490,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Repository</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_REPO_OPTION ?>" value="<?php echo $circleci_repo ?>" size="96">
+                  <p class="description" id="circle_ci-description">Please provide your repository information. E.g.: <em>my-github-username/my-github-repo-name</em></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -498,6 +500,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Job</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_OPTION ?>" value="<?php echo $circleci_job ?>" size="96">
+                  <p class="description" id="circle_ci-description">Plase provide the name of the job in charge to build your static site. <br />E.g.: <em>build</em></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -507,6 +510,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Token</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_TOKEN ?>" value="<?php echo $circleci_token ?>" size="96">
+                  <p class="description" id="circle_ci-description">Please provide the api token for Circle CI, for more information please go to <a href="https://circleci.com/docs/2.0/managing-api-tokens/" >Managing API Tokens</a></p>
 								</fieldset>
 							</td>
 						</tr>
