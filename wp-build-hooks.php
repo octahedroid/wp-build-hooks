@@ -132,7 +132,7 @@ function set_secret($token_name, $token_value)
 
 function circle_ci_options($obfuscate = true)
 {
-	$template = 'https://circleci.com/api/v1.1/project/{provider}/{repo}/tree/{branch}?circle-token={token}';
+	$template = 'https://circleci.com/api/v2/project/{provider}/{repo}/pipeline?circle-token={token}';
 	$token = get_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME);
 
 	if ($obfuscate) {
