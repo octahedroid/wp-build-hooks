@@ -391,8 +391,8 @@ function build_hooks()
 				<div class="submit">
 					<input name="action" value="trigger_build" type="hidden">
 					<input name="submit" id="submit" <?php if (!$url) {
-																							echo "disabled=disabled";
-																						} ?> class="button button-primary" value="Trigger Build" type="submit">
+						echo "disabled=disabled";
+					} ?> class="button button-primary" value="Trigger Build" type="submit">
 				</div>
 			</form>
 		<?php endif; ?>
@@ -484,7 +484,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Repository</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_REPO_OPTION ?>" value="<?php echo $circleci_repo ?>" size="96">
-										<p class="description" id="circle_ci-description">Please provide your repository information. E.g.: <em>my-repo-username/my-repo-name</em></p>
+									<p class="description" id="circle_ci-description">Please provide your repository information. E.g.: <em>my-provider/my-username/my-repo-name</em></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -631,5 +631,4 @@ function on_build_hooks_deactivation()
 {
 	clear_options_pantheon();
 }
-
 register_deactivation_hook(__FILE__, 'on_build_hooks_deactivation');
