@@ -132,7 +132,7 @@ function set_secret($token_name, $token_value)
 
 function circle_ci_options($obfuscate = true)
 {
-	$template = 'https://circleci.com/api/v2/project/{provider}/{repo}/pipeline?circle-token={token}';
+	$template = 'https://circleci.com/api/v2/project/{repo}/pipeline?circle-token={token}';
 	$token = get_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME);
 
 	if ($obfuscate) {
@@ -142,13 +142,11 @@ function circle_ci_options($obfuscate = true)
 
 	$url = str_replace(
 		[
-			'{provider}',
 			'{repo}',
 			'{branch}',
 			'{token}',
 		],
 		[
-			'gh',
 			get_option(BUILD_HOOK_CIRCLECI_REPO_OPTION),
 			'master',
 			$token,
@@ -196,18 +194,16 @@ function circle_ci_worklflow_link($pipeline_number, $id)
 {
 	return str_replace(
 		[
-			'{provider}',
 			'{repo}',
 			'{pipeline_number}',
 			'{id}',
 		],
 		[
-			'github',
 			get_option(BUILD_HOOK_CIRCLECI_REPO_OPTION),
 			$pipeline_number,
 			$id,
 		],
-		'https://app.circleci.com/pipelines/{provider}/{repo}/{pipeline_number}/workflows/{id}'
+		'https://app.circleci.com/pipelines/{repo}/{pipeline_number}/workflows/{id}'
 	);
 }
 
@@ -222,16 +218,14 @@ function circle_ci_pipeline()
 
 	$url = str_replace(
 		[
-			'{provider}',
 			'{repo}',
 			'{token}',
 		],
 		[
-			'gh',
 			$repo,
 			$token,
 		],
-		'https://circleci.com/api/v2/project/{provider}/{repo}/pipeline?circle-token={token}'
+		'https://circleci.com/api/v2/project/{repo}/pipeline?circle-token={token}'
 	);
 
 	$client = get_client();
@@ -477,7 +471,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Webhook</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_OPTION . $type ?>" value="<?php echo $url ?>" size="96">
-                  <p class="description" id="webhooks-description">Please provide the url to send a POST request and trigger a new build whenever you publish content. <br/>E.g.: <em>https://api.provider.com/build_hooks/XcXdfa587588ddb1b80c5XXx</em></p>
+									<p class="description" id="webhooks-description">Please provide the url to send a POST request and trigger a new build whenever you publish content. <br/>E.g.: <em>https://api.provider.com/build_hooks/XcXdfa587588ddb1b80c5XXx</em></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -490,7 +484,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Repository</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_REPO_OPTION ?>" value="<?php echo $circleci_repo ?>" size="96">
-                  <p class="description" id="circle_ci-description">Please provide your repository information. E.g.: <em>my-github-username/my-github-repo-name</em></p>
+										<p class="description" id="circle_ci-description">Please provide your repository information. E.g.: <em>my-repo-username/my-repo-name</em></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -500,7 +494,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Job</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_OPTION ?>" value="<?php echo $circleci_job ?>" size="96">
-                  <p class="description" id="circle_ci-description">Plase provide the name of the job in charge to build your static site. <br />E.g.: <em>build</em></p>
+									<p class="description" id="circle_ci-description">Plase provide the name of the job in charge to build your static site. <br />E.g.: <em>build</em></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -510,7 +504,7 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Token</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_TOKEN ?>" value="<?php echo $circleci_token ?>" size="96">
-                  <p class="description" id="circle_ci-description">Please provide the api token for Circle CI, for more information please go to <a href="https://circleci.com/docs/2.0/managing-api-tokens/" >Managing API Tokens</a></p>
+											<p class="description" id="circle_ci-description">Please provide the api token for Circle CI, for more information please go to <a href="https://circleci.com/docs/2.0/managing-api-tokens/" >Managing API Tokens</a></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -637,4 +631,5 @@ function on_build_hooks_deactivation()
 {
 	clear_options_pantheon();
 }
+
 register_deactivation_hook(__FILE__, 'on_build_hooks_deactivation');
