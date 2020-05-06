@@ -259,13 +259,30 @@ function circle_ci_pipeline()
 			$pipeline_data = json_decode($pipeline_response->getBody()->getContents(), TRUE);
 			if ($pipeline_data['items']) {
 				foreach ($pipeline_data['items'] as $key => $pipeline_item) {
+					$created = new \DateTime($pipeline_item['created_at']);
+					$stopped = new \DateTime($pipeline_item['stopped_at']);
+					$now = new \DateTime();
+					$started = $now->diff($created);
+					$format = '';
+					if ($started->d > 0) {
+						$format = '%d days, ';
+					}
+					if ($started->h > 0) {
+						$format .= '%h hours, ';
+					}
+					$duration = $stopped->diff($created);
 					$workflows[] = [
 						'id' => $pipeline_item['id'],
 						'url' => circle_ci_worklflow_link($pipeline_item['pipeline_number'], $pipeline_item['id']),
 						'status' => $pipeline_item['status'],
+						'created_at' => $created->format("m-d-Y h:i:s"),
+						'stopped_at' => $stopped->format("m-d-Y h:i:s"),
+						'started' =>  $started->format($format . "%i minutes, and %s seconds ago"),
+						'duration' =>  $duration->format("%i minute and %s seconds"),
 					];
 				}
 			}
+
 		} catch (\Throwable $th) {
 			$result = new WP_Error('broke', __('Invalid POST executed. Check the entered  web-hook, token and project-name values.', "build_hooks"));
 			echo $result->get_error_message();
@@ -404,7 +421,8 @@ function build_hooks()
 				<thead>
 					<tr>
 						<th>Status</th>
-						<th>Workflow</th>
+						<th>Started</th>
+						<th>Duration</th>
 					</tr>
 					<thead>
 					<tbody>
@@ -412,11 +430,16 @@ function build_hooks()
 							<tr>
 								<td>
 									<span class="notice notice-<?php echo $status[$workflow['status']] ?>">
-										<?php echo $workflow['status'] ?>
+										<a target="_blank" href="<?php echo $workflow['url'] ?>">
+											<?php echo $workflow['status'] ?>
+										</a>
 									</span>
 								</td>
 								<td>
-									<a target="_blank" href="<?php echo $workflow['url'] ?>"><?php echo $workflow['id']; ?></a>
+									<?php echo $workflow['started']; ?>
+								</td>
+								<td>
+									<?php echo $workflow['duration']; ?>
 								</td>
 							</tr>
 						<?php } ?>
@@ -588,6 +611,7 @@ function trigger_build()
 		$response = $client->post($url, $options);
 		$data = json_decode($response->getBody()->getContents(), TRUE);
 		$workflow = $data['workflows']['workflow_id'];
+
 		update_option(BUILD_HOOK_CIRCLECI_WORKFLOW, $workflow);
 	} catch (\Throwable $th) {
 		$result = new WP_Error('broke', __('Invalid POST executed. Check the entered  web-hook, token and project-name values.', "build_hooks"));
