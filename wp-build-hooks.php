@@ -130,6 +130,14 @@ function set_secret($token_name, $token_value)
 	write_secret_file(json_encode($json_data));
 }
 
+function get_circle_ci_repo() {
+	return str_replace(
+		['https://', 'http://', 'github.com', 'bitbucket.com'],
+		['', '', 'github', 'bitbucket'],
+		get_option(BUILD_HOOK_CIRCLECI_REPO_OPTION)
+	);
+}
+
 function circle_ci_options($obfuscate = true)
 {
 	$template = 'https://circleci.com/api/v2/project/{repo}/pipeline?circle-token={token}';
@@ -147,7 +155,7 @@ function circle_ci_options($obfuscate = true)
 			'{token}',
 		],
 		[
-			get_option(BUILD_HOOK_CIRCLECI_REPO_OPTION),
+			get_circle_ci_repo(),
 			'master',
 			$token,
 		],
@@ -199,7 +207,7 @@ function circle_ci_worklflow_link($pipeline_number, $id)
 			'{id}',
 		],
 		[
-			get_option(BUILD_HOOK_CIRCLECI_REPO_OPTION),
+			get_circle_ci_repo(),
 			$pipeline_number,
 			$id,
 		],
@@ -210,7 +218,7 @@ function circle_ci_worklflow_link($pipeline_number, $id)
 function circle_ci_pipeline()
 {
 	$token = get_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME);
-	$repo = get_option(BUILD_HOOK_CIRCLECI_REPO_OPTION);
+	$repo = get_circle_ci_repo();
 
 	if (!$token || !$repo) {
 		return [];
