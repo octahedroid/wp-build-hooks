@@ -138,12 +138,36 @@ function get_circle_ci_repo() {
 	);
 }
 
+function set_circle_ci_token($circleci_token = null) 
+{
+	if (!empty($_ENV['PANTHEON_ENVIRONMENT'])) {
+		if ($circleci_token === null) {
+			clean_secret_token();
+			return;
+		}
+
+		set_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME, $circleci_token);
+		return;
+	}
+
+	update_option(BUILD_HOOK_CIRCLECI_JOB_TOKEN, $circleci_token);
+}
+
+function get_circle_ci_token()
+{
+	if (!empty($_ENV['PANTHEON_ENVIRONMENT'])) {
+		return get_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME);
+	}
+
+	return get_option(BUILD_HOOK_CIRCLECI_JOB_TOKEN);
+}
+
 function circle_ci_options($obfuscate = true)
 {
 	$template = 'https://circleci.com/api/v2/project/{repo}/pipeline?circle-token={token}';
-	$token = get_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME);
+	$token = get_circle_ci_token();
 
-	if ($obfuscate) {
+	if ($obfuscate && $token) {
 		$stars = str_repeat('*', strlen($token) - 4);
 		$token = substr_replace($token, $stars, 2, -2);
 	}
@@ -182,7 +206,7 @@ function circle_ci_options($obfuscate = true)
 
 function circle_ci_worklflow()
 {
-	$token = get_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME);
+	$token = get_circle_ci_token();
 	$workflow = get_option(BUILD_HOOK_CIRCLECI_WORKFLOW);
 
 	if (!$token || !$workflow) {
@@ -217,7 +241,7 @@ function circle_ci_worklflow_link($pipeline_number, $id)
 
 function circle_ci_pipeline()
 {
-	$token = get_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME);
+	$token = get_circle_ci_token();
 	$repo = get_circle_ci_repo();
 
 	if (!$token || !$repo) {
@@ -336,14 +360,14 @@ function setOptionsPantheon($data)
 	if ($type === 'circle_ci') {
 		$circleci_repo = $data[BUILD_HOOK_CIRCLECI_REPO_OPTION] ? $data[BUILD_HOOK_CIRCLECI_REPO_OPTION] : null;
 		$circleci_job = $data[BUILD_HOOK_CIRCLECI_JOB_OPTION] ? $data[BUILD_HOOK_CIRCLECI_JOB_OPTION] : null;
-		$circleci_token = $data[BUILD_HOOK_CIRCLECI_JOB_TOKEN] ? $data[BUILD_HOOK_CIRCLECI_JOB_TOKEN] : "";
+		$circleci_token = $data[BUILD_HOOK_CIRCLECI_JOB_TOKEN] ? $data[BUILD_HOOK_CIRCLECI_JOB_TOKEN] : null;
 		update_option(BUILD_HOOK_CIRCLECI_REPO_OPTION, $circleci_repo);
 		update_option(BUILD_HOOK_CIRCLECI_JOB_OPTION, $circleci_job);
-		set_secret(BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME, $circleci_token);
+		set_circle_ci_token($circleci_token);
 	} else {
 		$web_hook = $data[BUILD_HOOK_OPTION . $type] ? $data[BUILD_HOOK_OPTION . $type] : null;
 		update_option(BUILD_HOOK_OPTION . $type, $web_hook);
-		clean_secret_token();
+		set_circle_ci_token(null);
 	}
 }
 function add_hook_actions()
@@ -515,7 +539,9 @@ function build_hooks_settings()
 								<fieldset>
 									<legend class="screen-reader-text">Repository</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_REPO_OPTION ?>" value="<?php echo $circleci_repo ?>" size="96">
-									<p class="description" id="circle_ci-description">Please provide your repository information. E.g.: <em>my-provider/my-username/my-repo-name</em></p>
+									<p class="description" id="circle_ci-description">
+										Please provide your repository information.<br/> E.g.: <em>my-provider/my-username/my-repo-name</em> or using repository url: <em>https://my-provider.com/my-username/my-repo-name</em>
+									</p>
 								</fieldset>
 							</td>
 						</tr>
@@ -656,7 +682,7 @@ function clear_options_pantheon()
 	foreach (BUILD_HOOK_TYPES as $key => $value) {
 		delete_option(BUILD_HOOK_OPTION . $key);
 	}
-	clean_secret_token();
+	set_circle_ci_token(null);
 }
 
 function on_build_hooks_deactivation()
