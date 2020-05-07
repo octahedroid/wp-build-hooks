@@ -17,7 +17,6 @@ const BUILD_HOOK_TYPES = [
 const BUILD_HOOK_TYPE_OPTION = '_build_hooks_type';
 const BUILD_HOOK_OPTION = '_build_hooks_';
 const BUILD_HOOK_CIRCLECI_REPO_OPTION = '_build_hooks_circle_ci_repository';
-const BUILD_HOOK_CIRCLECI_JOB_OPTION = '_build_hooks_circle_ci_job';
 const BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME = 'CIRCLE_CI_TOKEN';
 const BUILD_HOOK_CIRCLECI_JOB_TOKEN = '_build_hooks_circle_ci_token';
 const BUILD_HOOK_CIRCLECI_WORKFLOW = '_build_hooks_circle_ci_workflow';
@@ -186,21 +185,11 @@ function circle_ci_options($obfuscate = true)
 		$template
 	);
 
-	// @TODO implement multi-stage build
-	$options = [
-		'json' => [
-			'build_parameters' => [
-				'CIRCLE_JOB' => get_option(BUILD_HOOK_CIRCLECI_JOB_OPTION),
-			]
-		]
-	];
-
 	return [
 		'url' => $url,
 		'repo' => get_option(BUILD_HOOK_CIRCLECI_REPO_OPTION),
-		'job' => get_option(BUILD_HOOK_CIRCLECI_JOB_OPTION),
 		'token' => $token,
-		'options' => $options,
+		'options' => [],
 	];
 }
 
@@ -359,10 +348,8 @@ function setOptionsPantheon($data)
 	update_option(BUILD_HOOK_TRIGGER_OPTION, $trigger);
 	if ($type === 'circle_ci') {
 		$circleci_repo = $data[BUILD_HOOK_CIRCLECI_REPO_OPTION] ? $data[BUILD_HOOK_CIRCLECI_REPO_OPTION] : null;
-		$circleci_job = $data[BUILD_HOOK_CIRCLECI_JOB_OPTION] ? $data[BUILD_HOOK_CIRCLECI_JOB_OPTION] : null;
 		$circleci_token = $data[BUILD_HOOK_CIRCLECI_JOB_TOKEN] ? $data[BUILD_HOOK_CIRCLECI_JOB_TOKEN] : null;
 		update_option(BUILD_HOOK_CIRCLECI_REPO_OPTION, $circleci_repo);
-		update_option(BUILD_HOOK_CIRCLECI_JOB_OPTION, $circleci_job);
 		set_circle_ci_token($circleci_token);
 	} else {
 		$web_hook = $data[BUILD_HOOK_OPTION . $type] ? $data[BUILD_HOOK_OPTION . $type] : null;
@@ -375,10 +362,26 @@ function add_hook_actions()
 	if (isset($_POST['action'])) {
 		if ($_POST['action'] === 'update_option_build_hooks') {
 			setOptionsPantheon($_POST);
+			return;
 		}
 
 		if ($_POST['action'] === 'trigger_build') {
 			trigger_build();
+			return;
+		}
+
+		if ($_POST['action'] === 'trigger_deploy') {
+			$options['json'] = [
+				'parameters' =>
+					[
+						'run-build-and-deploy-master' => false,
+						'run-build-and-deploy-pr' => false,
+						'run-build-and-deploy-mu' => false,
+						'run-deploy-test-to-live' => true,
+					]
+			];
+			trigger_build($options);
+			return;
 		}
 	}
 }
@@ -434,16 +437,37 @@ function build_hooks()
 			<?php } ?>
 		<?php endif; ?>
 		<?php if (trigger_option() || settings_option()) : ?>
-			<hr />
 			<h2>Trigger</h2>
-			<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
-				<div class="submit">
-					<input name="action" value="trigger_build" type="hidden">
-					<input name="submit" id="submit" <?php if (!$url) {
-						echo "disabled=disabled";
-					} ?> class="button button-primary" value="Trigger Build" type="submit">
-				</div>
-			</form>
+			<hr />
+			<table>
+				<tbody>
+					<tr>
+						<td>
+							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
+								<div class="submit">
+									<input name="action" value="trigger_build" type="hidden">
+									<input name="submit" id="submit" <?php if (!$url) {
+										echo "disabled=disabled";
+									} ?> class="button button-primary" value="Trigger Build" type="submit">
+								</div>
+							</form>
+						</td>
+
+						<td> | </td>
+
+						<td>
+							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
+								<div class="submit">
+									<input name="action" value="trigger_deploy" type="hidden">
+									<input name="submit" id="submit" <?php if (!$url) {
+										echo "disabled=disabled";
+									} ?> class="button button-secondary" value="Deploy to Live" type="submit">
+								</div>
+							</form>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 		<?php endif; ?>
 		<?php if ($workflows) : ?>
 			​
@@ -490,7 +514,6 @@ function build_hooks_settings()
 		$ci_options = circle_ci_options(false);
 		$url = $ci_options['url'];
 		$circleci_repo = $ci_options['repo'];
-		$circleci_job = $ci_options['job'];
 		$circleci_token = $ci_options['token'];
 	}
 	$settings = get_option(BUILD_HOOK_SETTINGS_OPTION);
@@ -542,16 +565,6 @@ function build_hooks_settings()
 									<p class="description" id="circle_ci-description">
 										Please provide your repository information.<br/> E.g.: <em>my-provider/my-username/my-repo-name</em> or using repository url: <em>https://my-provider.com/my-username/my-repo-name</em>
 									</p>
-								</fieldset>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">Job</th>
-							<td>
-								<fieldset>
-									<legend class="screen-reader-text">Job</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_OPTION ?>" value="<?php echo $circleci_job ?>" size="96">
-									<p class="description" id="circle_ci-description">Plase provide the name of the job in charge to build your static site. <br />E.g.: <em>build</em></p>
 								</fieldset>
 							</td>
 						</tr>
@@ -630,7 +643,7 @@ function build_hooks_settings()
 <?php
 }
 
-function trigger_build()
+function trigger_build($build_options = [])
 {
 	$type = get_option(BUILD_HOOK_TYPE_OPTION);
 	$url = build_hook_option();
@@ -638,7 +651,10 @@ function trigger_build()
 	if ($type === 'circle_ci') {
 		$ci_options = circle_ci_options(false);
 		$url = $ci_options['url'];
-		$options = $ci_options['options'];
+		$options = array_merge(
+			$ci_options['options'],
+			$build_options
+		);
 	}
 	$client = get_client();
 	try {
@@ -678,7 +694,6 @@ function clear_options_pantheon()
 	delete_option(BUILD_HOOK_SETTINGS_OPTION);
 	delete_option(BUILD_HOOK_TRIGGER_OPTION);
 	delete_option(BUILD_HOOK_CIRCLECI_REPO_OPTION);
-	delete_option(BUILD_HOOK_CIRCLECI_JOB_OPTION);
 	foreach (BUILD_HOOK_TYPES as $key => $value) {
 		delete_option(BUILD_HOOK_OPTION . $key);
 	}
