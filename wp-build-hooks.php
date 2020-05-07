@@ -7,6 +7,9 @@
 
 require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
+define( 'BUILD_HOOKS_COMMANDS_PATH', 'includes/commands/' );
+require_once( BUILD_HOOKS_COMMANDS_PATH . 'build-hooks.php' );
+
 add_action('admin_menu', 'register_web_hooks_admin_page');
 
 const BUILD_HOOK_TYPES = [
