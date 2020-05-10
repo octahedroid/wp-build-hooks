@@ -298,6 +298,7 @@ function circle_ci_pipeline()
 					$workflows[] = [
 						'id' => $pipeline_item['id'],
 						'url' => circle_ci_worklflow_link($pipeline_item['pipeline_number'], $pipeline_item['id']),
+						'name' => $pipeline_item['name'],
 						'status' => $pipeline_item['status'],
 						'created_at' => $created->format("m-d-Y h:i:s"),
 						'stopped_at' => $stopped->format("m-d-Y h:i:s"),
@@ -473,13 +474,13 @@ function build_hooks()
 			</table>
 		<?php endif; ?>
 		<?php if ($workflows) : ?>
-			​
 			<hr />
-			<h2>Last workflow executions</h2>
+			<h2>Latest workflow executions</h2>
 			<table class="wp-list-table widefat striped">
 				<thead>
 					<tr>
 						<th>Status</th>
+						<th>Name</th>
 						<th>Started</th>
 						<th>Duration</th>
 					</tr>
@@ -493,6 +494,11 @@ function build_hooks()
 											<?php echo $workflow['status'] ?>
 										</a>
 									</span>
+								</td>
+								<td>
+									<a target="_blank" href="<?php echo $workflow['url'] ?>">
+										<?php echo $workflow['name']; ?>
+									</a>
 								</td>
 								<td>
 									<?php echo $workflow['started']; ?>
