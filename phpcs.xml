@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<ruleset>
+	<description>Coding standards for the WPBuildHooks plugin</description>
+
+	<!-- Show progress and sniff codes in all reports. -->
+	<arg value="ps"/>
+
+	<!-- A path to strip from the front of file paths inside reports. -->
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg name="extensions" value="php"/>
+
+	<!-- Run the lints in parallel so they run faster. This will separate the files into 20 chunks to be linted -->
+	<arg name="parallel" value="20"/>
+
+	<!-- Includes -->
+	<file>includes</file>
+	<file>wp-build-hooks.php</file>
+
+	<!-- Check for PHP cross-version compatibility. -->
+	<config name="testVersion" value="7.2-"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!-- WordPress coding standards. -->
+	<rule ref="WordPress">
+		<!-- Exclude as plugin adheres to the PSR-4 standard. -->
+		<exclude name="WordPress.Files.FileName"/>
+	</rule>
+
+	<!-- Rules -->
+	<rule ref="WordPress-Core">
+		<!-- Definitely should not be added back -->
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+	</rule>
+
+	<!-- Tests for inline documentation of code -->
+	<rule ref="WordPress-Docs">
+		<exclude name="Generic.Commenting.DocComment.MissingShort" />
+		<exclude name="WordPress.Files.FileName" />
+
+		<!-- Should be re-enabled -->
+		<exclude name="Squiz.Commenting"/>
+	</rule>
+
+	<!-- Allow namespaced hook names in dot notation. -->
+	<rule ref="WordPress.NamingConventions.ValidHookName">
+		<properties>
+			<property name="additionalWordDelimiters" value="."/>
+		</properties>
+	</rule>
+
+	<!-- Enforce short array syntax -->
+	<rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+</ruleset>
