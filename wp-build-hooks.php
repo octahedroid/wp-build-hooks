@@ -22,6 +22,7 @@ const BUILD_HOOK_OPTION = '_build_hooks_';
 const BUILD_HOOK_CIRCLECI_REPO_OPTION = '_build_hooks_circle_ci_repository';
 const BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME = 'CIRCLE_CI_TOKEN';
 const BUILD_HOOK_CIRCLECI_JOB_TOKEN = '_build_hooks_circle_ci_token';
+const BUILD_HOOK_CIRCLECI_SITE = '_build_hooks_circle_ci_site';
 const BUILD_HOOK_CIRCLECI_WORKFLOW = '_build_hooks_circle_ci_workflow';
 const BUILD_HOOK_SETTINGS_OPTION = '_build_hooks_settings';
 const BUILD_HOOK_TRIGGER_OPTION = '_build_hooks_trigger';
@@ -192,6 +193,7 @@ function circle_ci_options($obfuscate = true)
 		'url' => $url,
 		'repo' => get_option(BUILD_HOOK_CIRCLECI_REPO_OPTION),
 		'token' => $token,
+		'site' => get_option(BUILD_HOOK_CIRCLECI_SITE),
 		'options' => [],
 	];
 }
@@ -376,7 +378,9 @@ function setOptionsPantheon($data)
 	if ($type === 'circle_ci') {
 		$circleci_repo = $data[BUILD_HOOK_CIRCLECI_REPO_OPTION] ? $data[BUILD_HOOK_CIRCLECI_REPO_OPTION] : null;
 		$circleci_token = $data[BUILD_HOOK_CIRCLECI_JOB_TOKEN] ? $data[BUILD_HOOK_CIRCLECI_JOB_TOKEN] : null;
+		$circleci_site = $data[BUILD_HOOK_CIRCLECI_SITE] ? $data[BUILD_HOOK_CIRCLECI_SITE] : null;
 		update_option(BUILD_HOOK_CIRCLECI_REPO_OPTION, $circleci_repo);
+		update_option(BUILD_HOOK_CIRCLECI_SITE, $circleci_site);
 		set_circle_ci_token($circleci_token);
 	} else {
 		$web_hook = $data[BUILD_HOOK_OPTION . $type] ? $data[BUILD_HOOK_OPTION . $type] : null;
@@ -421,6 +425,8 @@ function build_hooks()
 	if ($type === 'circle_ci') {
 		$ci_options = circle_ci_options();
 		$url = $ci_options['url'];
+		$site = $ci_options['site'];
+		$site_url = 'https://{environment}-{site}.pantheonsite.io/';
 		$workflow = circle_ci_pipeline_current();
 		$workflows = circle_ci_pipelines();
 		$status = [
@@ -462,7 +468,7 @@ function build_hooks()
 			</table>
 		<?php endif; ?>
 		<?php if (trigger_option() || settings_option()) : ?>
-			<h2>Trigger</h2>
+			<h2>Build</h2>
 			<hr />
 			<table>
 				<tbody>
@@ -477,18 +483,33 @@ function build_hooks()
 								</div>
 							</form>
 						</td>
-
-						<td> | </td>
-
+					</tr>
+				</tbody>
+			</table>
+			<h2>Deploy</h2>
+			<hr />
+			<table >
+				<tbody>
+					<tr>
 						<td>
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
 								<div class="submit">
 									<input name="action" value="trigger_deploy" type="hidden">
 									<input name="submit" id="submit" <?php if ($disable) {
 										echo "disabled=disabled";
-									} ?> class="button button-secondary" value="Deploy to Live" type="submit">
+									} ?> class="button button-primary" value="Deploy to Live" type="submit">
 								</div>
 							</form>
+						</td>
+						<td>
+							<a class="button button-secondary" target="_blank" href="<?php echo str_replace(['{environment}', '{site}'], ['test',$site], $site_url) ?>">
+								Visit Test Site
+							</a>
+						</td>
+						<td>
+							<a class="button button-tertiary" target="_blank" href="<?php echo str_replace(['{environment}', '{site}'], ['live', $site], $site_url) ?>">
+								Visit Live Site
+							</a>
 						</td>
 					</tr>
 				</tbody>
@@ -545,6 +566,7 @@ function build_hooks_settings()
 		$url = $ci_options['url'];
 		$circleci_repo = $ci_options['repo'];
 		$circleci_token = $ci_options['token'];
+		$circleci_site = $ci_options['site'];
 	}
 	$settings = get_option(BUILD_HOOK_SETTINGS_OPTION);
 	$trigger = get_option(BUILD_HOOK_TRIGGER_OPTION);
@@ -605,6 +627,16 @@ function build_hooks_settings()
 									<legend class="screen-reader-text">Token</legend>
 									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_TOKEN ?>" value="<?php echo $circleci_token ?>" size="96">
 											<p class="description" id="circle_ci-description">Please provide the api token for Circle CI, for more information please go to <a href="https://circleci.com/docs/2.0/managing-api-tokens/" >Managing API Tokens</a></p>
+								</fieldset>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">Front-end site</th>
+							<td>
+								<fieldset>
+									<legend class="screen-reader-text">Front-end site</legend>
+									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_SITE ?>" value="<?php echo $circleci_site ?>" size="96">
+											<p class="description" id="circle_ci-site">Please provide the front-end pantheon site name.</p>
 								</fieldset>
 							</td>
 						</tr>
@@ -722,6 +754,7 @@ function clear_options_pantheon()
 	delete_option(BUILD_HOOK_TYPE_OPTION);
 	delete_option(BUILD_HOOK_SETTINGS_OPTION);
 	delete_option(BUILD_HOOK_TRIGGER_OPTION);
+	delete_option(BUILD_HOOK_CIRCLECI_SITE);
 	delete_option(BUILD_HOOK_CIRCLECI_REPO_OPTION);
 	foreach (BUILD_HOOK_TYPES as $key => $value) {
 		delete_option(BUILD_HOOK_OPTION . $key);
