@@ -26,12 +26,12 @@ class BuildHooksCommand extends WP_CLI_Command {
 	 * @param $assoc_args
 	 */
 	function mu( $args, $assoc_args ) {
-		list( $wordpressUrl, $destinationEnv  ) = $args;
+		list( $wordpress_url, $destination_env  ) = $args;
 		$options['json']                        = [
 			'parameters' =>
 				[
-					'wordpress-url'               => $wordpressUrl,
-					'destination-env'             => $destinationEnv,
+					'wordpress-url'               => $wordpress_url,
+					'destination-env'             => $destination_env,
 					'run-build-and-deploy-master' => false,
 					'run-build-and-deploy-pr'     => false,
 					'run-build-and-deploy-mu'     => true,
@@ -41,7 +41,7 @@ class BuildHooksCommand extends WP_CLI_Command {
 		trigger_build( $options );
 
 		// Print a success message
-		WP_CLI::success( 'Starting build from ' . $wordpressUrl . ', to destination ' . $destinationEnv );
+		WP_CLI::success( 'Starting build from ' . $wordpress_url . ', to destination ' . $destination_env );
 	}
 }
 
