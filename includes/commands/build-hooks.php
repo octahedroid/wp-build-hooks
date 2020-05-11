@@ -25,9 +25,9 @@ class BuildHooksCommand extends WP_CLI_Command {
 	 * @param $args
 	 * @param $assoc_args
 	 */
-	function mu( $args, $assoc_args ) {
+	public function mu( $args, $assoc_args ) {
 		list( $wordpress_url, $destination_env  ) = $args;
-		$options['json']                        = [
+		$options['json']                          = [
 			'parameters' =>
 				[
 					'wordpress-url'               => $wordpress_url,
