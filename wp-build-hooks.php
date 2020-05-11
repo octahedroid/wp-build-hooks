@@ -196,7 +196,7 @@ function circle_ci_options($obfuscate = true)
 	];
 }
 
-function circle_ci_worklflow()
+function circle_ci_pipeline_current()
 {
 	$token = get_circle_ci_token();
 	$workflow = get_option(BUILD_HOOK_CIRCLECI_WORKFLOW);
@@ -205,13 +205,9 @@ function circle_ci_worklflow()
 		return [];
 	}
 
-	$url = 'https://circleci.com/api/v2/workflow/' . $workflow . '?circle-token=' . $token;
-	$client = get_client();
-	$response = $client->get($url);
-	$data = json_decode($response->getBody()->getContents(), TRUE);
-	$data['link'] = circle_ci_worklflow_link($data['pipeline_number'], $data['id']);
+	$pipeline = circle_ci_pipeline($workflow);
 
-	return $data;
+	return current($pipeline['items']);
 }
 
 function circle_ci_worklflow_link($pipeline_number, $id)
@@ -231,7 +227,34 @@ function circle_ci_worklflow_link($pipeline_number, $id)
 	);
 }
 
-function circle_ci_pipeline()
+function circle_ci_pipeline($id)
+{
+	$token = get_circle_ci_token();
+	$url = str_replace(
+		[
+			'{id}',
+			'{token}',
+		],
+		[
+			$id,
+			$token,
+		],
+		'https://circleci.com/api/v2/pipeline/{id}/workflow?circle-token={token}'
+	);
+
+	try {
+		$client = get_client();
+		$result = $client->get($url);
+		$data = json_decode($result->getBody()->getContents(), TRUE);
+
+		return $data;
+	} catch (\Throwable $th) {
+		$result = new WP_Error('broke', __('Invalid POST executed. Check the entered  web-hook, token and project-name values.', "build_hooks"));
+		echo $result->get_error_message();
+	}
+}
+
+function circle_ci_pipelines()
 {
 	$token = get_circle_ci_token();
 	$repo = get_circle_ci_repo();
@@ -398,8 +421,8 @@ function build_hooks()
 	if ($type === 'circle_ci') {
 		$ci_options = circle_ci_options();
 		$url = $ci_options['url'];
-		$workflow = circle_ci_worklflow();
-		$workflows = circle_ci_pipeline();
+		$workflow = circle_ci_pipeline_current();
+		$workflows = circle_ci_pipelines();
 		$status = [
 			'running' => 'warning',
 			'success' => 'success',
@@ -407,6 +430,14 @@ function build_hooks()
 			'failed' => 'error',
 			'canceled' => 'error',
 		];
+
+		$disable = false;
+		if (!$url) {
+			$disable = true;
+		}
+		if ($workflow && $workflow['status'] === 'running') {
+			$disable = true;
+		}
 	}
 
 ?>
@@ -429,16 +460,6 @@ function build_hooks()
 					</tr>
 				</tbody>
 			</table>
-			<?php if ($workflow) { ?>
-				<div class="notice notice-<?php echo $status[$workflow['status']] ?>">
-					<p>
-						Last status: <?php echo $workflow['status']  ?>
-					</p>
-					<p>
-						Workflow: <a target="_blank" href="<?php echo $workflow['link']; ?>"><?php echo $workflow['id']; ?></a>
-					</p>
-				</div>
-			<?php } ?>
 		<?php endif; ?>
 		<?php if (trigger_option() || settings_option()) : ?>
 			<h2>Trigger</h2>
@@ -450,7 +471,7 @@ function build_hooks()
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
 								<div class="submit">
 									<input name="action" value="trigger_build" type="hidden">
-									<input name="submit" id="submit" <?php if (!$url) {
+									<input name="submit" id="submit" <?php if ($disable) {
 										echo "disabled=disabled";
 									} ?> class="button button-primary" value="Trigger Build" type="submit">
 								</div>
@@ -463,7 +484,7 @@ function build_hooks()
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
 								<div class="submit">
 									<input name="action" value="trigger_deploy" type="hidden">
-									<input name="submit" id="submit" <?php if (!$url) {
+									<input name="submit" id="submit" <?php if ($disable) {
 										echo "disabled=disabled";
 									} ?> class="button button-secondary" value="Deploy to Live" type="submit">
 								</div>
@@ -669,9 +690,8 @@ function trigger_build($build_options = [])
 	try {
 		$response = $client->post($url, $options);
 		$data = json_decode($response->getBody()->getContents(), TRUE);
-		$workflow = $data['workflows']['workflow_id'];
+		update_option(BUILD_HOOK_CIRCLECI_WORKFLOW, $data['id']);
 
-		update_option(BUILD_HOOK_CIRCLECI_WORKFLOW, $workflow);
 	} catch (\Throwable $th) {
 		$result = new WP_Error('broke', __('Invalid POST executed. Check the entered  web-hook, token and project-name values.', "build_hooks"));
 		return $result->get_error_message();
