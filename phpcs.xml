@@ -31,6 +31,8 @@
 	<rule ref="WordPress-Core">
 		<!-- Definitely should not be added back -->
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+		<exclude name="WordPress.PHP.DisallowShortTernary.Found"/>
+		<exclude name="WordPress.CodeAnalysis.AssignmentInCondition.Found"/>
 	</rule>
 
 	<!-- Tests for inline documentation of code -->
