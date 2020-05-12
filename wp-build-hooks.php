@@ -603,7 +603,7 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Front-end site</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_SITE; ?>" value="<?php echo $circleci_site; ?>" size="96">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_SITE ); ?>" value="<?php echo $circleci_site; ?>" size="96">
 											<p class="description" id="circle_ci-site">Please provide the front-end pantheon site name.</p>
 								</fieldset>
 							</td>
@@ -621,12 +621,12 @@ function build_hooks_settings() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Roles</legend>
-								<input type="hidden" name="<?php echo BUILD_HOOK_SETTINGS_OPTION; ?>[]" value="administrator">
+								<input type="hidden" name="<?php echo esc_attr( BUILD_HOOK_SETTINGS_OPTION ); ?>[]" value="administrator">
 								<?php
 								foreach ( $roles as $key => $role ) {
 									?>
-									<label for="<?php echo BUILD_HOOK_SETTINGS_OPTION . '_' . $key; ?>">
-										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $settings, true ) ? 'checked' : ''; ?> name="<?php echo BUILD_HOOK_SETTINGS_OPTION; ?>[]" id="<?php echo BUILD_HOOK_SETTINGS_OPTION . '_' . $key; ?>" value="<?php echo $key; ?>"> <?php echo $role['name']; ?>
+									<label for="<?php echo esc_attr( BUILD_HOOK_SETTINGS_OPTION . '_' . $key ); ?>">
+										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $settings, true ) ? 'checked' : ''; ?> name="<?php echo esc_attr( BUILD_HOOK_SETTINGS_OPTION ); ?>[]" id="<?php echo esc_attr( BUILD_HOOK_SETTINGS_OPTION . '_' . $key ); ?>" value="<?php echo esc_attr( $key ); ?>"> <?php echo esc_html( $role['name'] ); ?>
 									</label><br />
 									<?php
 								}
@@ -646,12 +646,12 @@ function build_hooks_settings() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Roles</legend>
-								<input type="hidden" name="<?php echo BUILD_HOOK_TRIGGER_OPTION; ?>[]" value="administrator">
+								<input type="hidden" name="<?php echo esc_attr( BUILD_HOOK_TRIGGER_OPTION ); ?>[]" value="administrator">
 								<?php
 								foreach ( $roles as $key => $role ) {
 									?>
-									<label for="<?php echo BUILD_HOOK_TRIGGER_OPTION . '_' . $key; ?>">
-										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $trigger, true ) ? 'checked' : ''; ?> name="<?php echo BUILD_HOOK_TRIGGER_OPTION; ?>[]" id="<?php echo $trigger_option . '_' . $key; ?>" value="<?php echo $key; ?>"> <?php echo $role['name']; ?>
+									<label for="<?php echo esc_attr( BUILD_HOOK_TRIGGER_OPTION . '_' . $key ); ?>">
+										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $trigger, true ) ? 'checked' : ''; ?> name="<?php echo esc_attr( BUILD_HOOK_TRIGGER_OPTION ); ?>[]" id="<?php echo esc_attr( $trigger_option . '_' . $key ); ?>" value="<?php echo esc_attr( $key ); ?>"> <?php echo esc_html( $role['name'] ); ?>
 									</label><br />
 									<?php
 								}
