@@ -471,12 +471,12 @@ function build_hooks() {
 							</form>
 						</td>
 						<td>
-							<a class="button button-secondary" target="_blank" href="<?php echo str_replace( [ '{environment}', '{site}' ], [ 'test', $site ], $site_url ); ?>">
+							<a class="button button-secondary" target="_blank" href="<?php echo esc_attr( str_replace( [ '{environment}', '{site}' ], [ 'test', $site ], $site_url ) ); ?>">
 								Visit Test Site
 							</a>
 						</td>
 						<td>
-							<a class="button button-tertiary" target="_blank" href="<?php echo str_replace( [ '{environment}', '{site}' ], [ 'live', $site ], $site_url ); ?>">
+							<a class="button button-tertiary" target="_blank" href="<?php echo esc_attr( str_replace( [ '{environment}', '{site}' ], [ 'live', $site ], $site_url ) ); ?>">
 								Visit Live Site
 							</a>
 						</td>
@@ -500,8 +500,8 @@ function build_hooks() {
 						<?php foreach ( $workflows as $key => $workflow ) { ?>
 							<tr>
 								<td>
-									<span class="notice notice-<?php echo $status[ $workflow['status'] ]; ?>">
-										<a target="_blank" href="<?php echo $workflow['url']; ?>">
+									<span class="notice notice-<?php echo esc_attr( $status[ $workflow['status'] ] ); ?>">
+										<a target="_blank" href="<?php echo esc_attr( $workflow['url'] ); ?>">
 											<?php echo $workflow['status']; ?>
 										</a>
 									</span>
