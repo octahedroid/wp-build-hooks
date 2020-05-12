@@ -581,7 +581,7 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Repository</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_REPO_OPTION; ?>" value="<?php echo $circleci_repo; ?>" size="96">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_REPO_OPTION ); ?>" value="<?php echo esc_attr( $circleci_repo ); ?>" size="96">
 									<p class="description" id="circle_ci-description">
 										Please provide your repository information.<br/> E.g.: <em>my-provider/my-username/my-repo-name</em> or using repository url: <em>https://my-provider.com/my-username/my-repo-name</em>
 									</p>
@@ -593,7 +593,7 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Token</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_TOKEN; ?>" value="<?php echo $circleci_token; ?>" size="96">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_JOB_TOKEN ); ?>" value="<?php echo esc_attr( $circleci_token ); ?>" size="96">
 											<p class="description" id="circle_ci-description">Please provide the api token for Circle CI, for more information please go to <a href="https://circleci.com/docs/2.0/managing-api-tokens/" >Managing API Tokens</a></p>
 								</fieldset>
 							</td>
@@ -603,7 +603,7 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Front-end site</legend>
-									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_SITE ); ?>" value="<?php echo $circleci_site; ?>" size="96">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_SITE ); ?>" value="<?php echo esc_attr( $circleci_site ); ?>" size="96">
 											<p class="description" id="circle_ci-site">Please provide the front-end pantheon site name.</p>
 								</fieldset>
 							</td>
