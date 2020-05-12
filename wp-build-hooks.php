@@ -540,7 +540,7 @@ function build_hooks_settings() {
 		​
 		<hr />
 		<h2>Web Hook</h2>
-		<form id="hook_settings_form" method="post" action="<?php echo $action; ?>" novalidate="novalidate">
+		<form id="hook_settings_form" method="post" action="<?php echo esc_attr( $action ); ?>" novalidate="novalidate">
 			<table class="form-table">
 				<tbody>
 					<tr>
