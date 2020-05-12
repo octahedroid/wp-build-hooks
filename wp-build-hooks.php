@@ -352,17 +352,19 @@ function set_options_pantheon( $data ) {
 
 function add_hook_actions() {
 	if ( isset( $_POST['action'] ) ) {
-		if ( $_POST['action'] === 'update_option_build_hooks' ) {
+		$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
+
+		if ( $action === 'update_option_build_hooks' ) {
 			set_options_pantheon( $_POST );
 			return;
 		}
 
-		if ( $_POST['action'] === 'trigger_build' ) {
+		if ( $action === 'trigger_build' ) {
 			trigger_build();
 			return;
 		}
 
-		if ( $_POST['action'] === 'trigger_deploy' ) {
+		if ( $action === 'trigger_deploy' ) {
 			$options['json'] = [
 				'parameters' => [
 					'run-build-and-deploy-master' => false,
@@ -371,6 +373,7 @@ function add_hook_actions() {
 					'run-deploy-test-to-live'     => true,
 				],
 			];
+
 			trigger_build( $options );
 			return;
 		}
@@ -528,6 +531,7 @@ function build_hooks() {
 function build_hooks_settings() {
 	$type = get_option( BUILD_HOOK_TYPE_OPTION );
 	$url  = build_hook_option();
+
 	if ( $type === 'circle_ci' ) {
 		$ci_options     = circle_ci_options( false );
 		$url            = $ci_options['url'];
