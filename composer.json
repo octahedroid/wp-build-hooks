@@ -19,8 +19,7 @@
     "phpcompatibility/phpcompatibility-wp": "^2.1"
   },
   "scripts": {
-    "phpcs-i": ["@php ./vendor/bin/phpcs -i"],
-    "check-cs": ["@php ./vendor/bin/phpcs"],
-    "fix-cs": ["@php ./vendor/bin/phpcbf"]
+    "phpcs": ["@php ./vendor/bin/phpcs"],
+    "phpcbf": ["@php ./vendor/bin/phpcbf"]
   }
 }
