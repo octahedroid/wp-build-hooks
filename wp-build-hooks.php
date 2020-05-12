@@ -40,7 +40,8 @@ function bypass_option() {
 		[
 			'super_admin',
 			'administrator',
-		]
+		],
+		true
 	);
 }
 
@@ -57,7 +58,7 @@ function settings_option() {
 
 	$settings = get_option( BUILD_HOOK_SETTINGS_OPTION, [] );
 
-	return in_array( current_user_role(), $settings );
+	return in_array( current_user_role(), $settings, true );
 }
 
 function trigger_option() {
@@ -67,7 +68,7 @@ function trigger_option() {
 
 	$trigger = get_option( BUILD_HOOK_TRIGGER_OPTION, [] );
 
-	return in_array( current_user_role(), $trigger );
+	return in_array( current_user_role(), $trigger, true );
 }
 
 function get_secret_file() {
@@ -327,7 +328,7 @@ function register_web_hooks_admin_page() {
 	}
 }
 
-function setOptionsPantheon( $data ) {
+function set_options_pantheon( $data ) {
 	$type     = $data[ BUILD_HOOK_TYPE_OPTION ] ? $data[ BUILD_HOOK_TYPE_OPTION ] : null;
 	$settings = $data[ BUILD_HOOK_SETTINGS_OPTION ] ? $data[ BUILD_HOOK_SETTINGS_OPTION ] : null;
 	$trigger  = $data[ BUILD_HOOK_TRIGGER_OPTION ] ? $data[ BUILD_HOOK_TRIGGER_OPTION ] : null;
@@ -352,7 +353,7 @@ function setOptionsPantheon( $data ) {
 function add_hook_actions() {
 	if ( isset( $_POST['action'] ) ) {
 		if ( $_POST['action'] === 'update_option_build_hooks' ) {
-			setOptionsPantheon( $_POST );
+			set_options_pantheon( $_POST );
 			return;
 		}
 
@@ -443,7 +444,7 @@ function build_hooks() {
 										echo 'disabled=disabled';
 									}
 									?>
-									 class="button button-primary" value="Trigger Build" type="submit">
+									class="button button-primary" value="Trigger Build" type="submit">
 								</div>
 							</form>
 						</td>
@@ -465,7 +466,7 @@ function build_hooks() {
 										echo 'disabled=disabled';
 									}
 									?>
-									 class="button button-primary" value="Deploy to Live" type="submit">
+									class="button button-primary" value="Deploy to Live" type="submit">
 								</div>
 							</form>
 						</td>
@@ -555,7 +556,7 @@ function build_hooks_settings() {
 								<select name="<?php echo BUILD_HOOK_TYPE_OPTION; ?>" id="build_hooks_type">
 									<option value="">Select type...</option>
 									<?php foreach ( BUILD_HOOK_TYPES as $key => $value ) { ?>
-										<option value="<?php echo $key; ?>" <?php echo $type == $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
+										<option value="<?php echo $key; ?>" <?php echo $type === $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
 									<?php } ?>
 								</select>
 							</fieldset>
@@ -625,7 +626,7 @@ function build_hooks_settings() {
 								foreach ( $roles as $key => $role ) {
 									?>
 									<label for="<?php echo BUILD_HOOK_SETTINGS_OPTION . '_' . $key; ?>">
-										<input type="checkbox" <?php echo $key == 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $settings ) ? 'checked' : ''; ?> name="<?php echo BUILD_HOOK_SETTINGS_OPTION; ?>[]" id="<?php echo BUILD_HOOK_SETTINGS_OPTION . '_' . $key; ?>" value="<?php echo $key; ?>"> <?php echo $role['name']; ?>
+										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $settings, true ) ? 'checked' : ''; ?> name="<?php echo BUILD_HOOK_SETTINGS_OPTION; ?>[]" id="<?php echo BUILD_HOOK_SETTINGS_OPTION . '_' . $key; ?>" value="<?php echo $key; ?>"> <?php echo $role['name']; ?>
 									</label><br />
 									<?php
 								}
@@ -650,7 +651,7 @@ function build_hooks_settings() {
 								foreach ( $roles as $key => $role ) {
 									?>
 									<label for="<?php echo BUILD_HOOK_TRIGGER_OPTION . '_' . $key; ?>">
-										<input type="checkbox" <?php echo $key == 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $trigger ) ? 'checked' : ''; ?> name="<?php echo BUILD_HOOK_TRIGGER_OPTION; ?>[]" id="<?php echo $trigger_option . '_' . $key; ?>" value="<?php echo $key; ?>"> <?php echo $role['name']; ?>
+										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $trigger, true ) ? 'checked' : ''; ?> name="<?php echo BUILD_HOOK_TRIGGER_OPTION; ?>[]" id="<?php echo $trigger_option . '_' . $key; ?>" value="<?php echo $key; ?>"> <?php echo $role['name']; ?>
 									</label><br />
 									<?php
 								}
