@@ -354,6 +354,11 @@ function add_hook_actions() {
 	if ( isset( $_POST['action'] ) ) {
 		$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
 
+		// Prevent processing without nonce verification.
+		if ( ! isset( $_POST[ "{$action}_nonce" ] ) || ! wp_verify_nonce( wp_unslash( _POST[ "{$action}_nonce" ] ), $action ) ) {
+			return;
+		}
+
 		if ( $action === 'update_option_build_hooks' ) {
 			set_options_pantheon( $_POST );
 			return;
@@ -438,6 +443,7 @@ function build_hooks() {
 					<tr>
 						<td>
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
+								<?php wp_nonce_field( 'trigger_build', 'trigger_build_nonce' ); ?>
 
 								<div class="submit">
 									<input name="action" value="trigger_build" type="hidden">
@@ -455,6 +461,8 @@ function build_hooks() {
 					<tr>
 						<td>
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
+								<?php wp_nonce_field( 'trigger_deploy', 'trigger_deploy_nonce' ); ?>
+
 								<div class="submit">
 									<input name="action" value="trigger_deploy" type="hidden">
 									<input name="submit" id="submit" <?php echo $disable ? 'disabled=disabled' : ''; ?> class="button button-primary" value="Deploy to Live" type="submit">
@@ -657,6 +665,9 @@ function build_hooks_settings() {
 					</tr>
 				</tbody>
 			</table>
+
+			<?php wp_nonce_field( 'update_option_build_hooks', 'update_option_build_hooks_nonce' ); ?>
+
 			<div class="submit">
 				<input name="action" value="update_option_build_hooks" type="hidden">
 				<input name="submit" id="submit" class="button button-primary" value="Save changes" type="submit">
