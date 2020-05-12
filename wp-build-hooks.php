@@ -329,22 +329,22 @@ function register_web_hooks_admin_page() {
 }
 
 function set_options_pantheon( $data ) {
-	$type     = $data[ BUILD_HOOK_TYPE_OPTION ] ? $data[ BUILD_HOOK_TYPE_OPTION ] : null;
-	$settings = $data[ BUILD_HOOK_SETTINGS_OPTION ] ? $data[ BUILD_HOOK_SETTINGS_OPTION ] : null;
-	$trigger  = $data[ BUILD_HOOK_TRIGGER_OPTION ] ? $data[ BUILD_HOOK_TRIGGER_OPTION ] : null;
+	$type     = $data[ BUILD_HOOK_TYPE_OPTION ] ?: null;
+	$settings = $data[ BUILD_HOOK_SETTINGS_OPTION ] ?: null;
+	$trigger  = $data[ BUILD_HOOK_TRIGGER_OPTION ] ?: null;
 	update_option( BUILD_HOOK_TYPE_OPTION, $type );
 	update_option( BUILD_HOOK_SETTINGS_OPTION, $settings );
 	update_option( BUILD_HOOK_TRIGGER_OPTION, $trigger );
 
 	if ( $type === 'circle_ci' ) {
-		$circleci_repo  = $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] ? $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] : null;
-		$circleci_token = $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] ? $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] : null;
-		$circleci_site  = $data[ BUILD_HOOK_CIRCLECI_SITE ] ? $data[ BUILD_HOOK_CIRCLECI_SITE ] : null;
+		$circleci_repo  = $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] ?: null;
+		$circleci_token = $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] ?: null;
+		$circleci_site  = $data[ BUILD_HOOK_CIRCLECI_SITE ] ?: null;
 		update_option( BUILD_HOOK_CIRCLECI_REPO_OPTION, $circleci_repo );
 		update_option( BUILD_HOOK_CIRCLECI_SITE, $circleci_site );
 		set_circle_ci_token( $circleci_token );
 	} else {
-		$web_hook = $data[ BUILD_HOOK_OPTION . $type ] ? $data[ BUILD_HOOK_OPTION . $type ] : null;
+		$web_hook = $data[ BUILD_HOOK_OPTION . $type ] ?: null;
 		update_option( BUILD_HOOK_OPTION . $type, $web_hook );
 		set_circle_ci_token( null );
 	}
