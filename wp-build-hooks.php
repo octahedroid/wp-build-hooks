@@ -438,15 +438,10 @@ function build_hooks() {
 					<tr>
 						<td>
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
+
 								<div class="submit">
 									<input name="action" value="trigger_build" type="hidden">
-									<input name="submit" id="submit"
-									<?php
-									if ( $disable ) {
-										echo 'disabled=disabled';
-									}
-									?>
-									class="button button-primary" value="Trigger Build" type="submit">
+									<input name="submit" id="submit" <?php echo $disable ? 'disabled=disabled' : ''; ?> class="button button-primary" value="Trigger Build" type="submit">
 								</div>
 							</form>
 						</td>
@@ -462,13 +457,7 @@ function build_hooks() {
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
 								<div class="submit">
 									<input name="action" value="trigger_deploy" type="hidden">
-									<input name="submit" id="submit"
-									<?php
-									if ( $disable ) {
-										echo 'disabled=disabled';
-									}
-									?>
-									class="button button-primary" value="Deploy to Live" type="submit">
+									<input name="submit" id="submit" <?php echo echo $disable ? 'disabled=disabled' : ''; ?> class="button button-primary" value="Deploy to Live" type="submit">
 								</div>
 							</form>
 						</td>
