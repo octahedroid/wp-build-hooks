@@ -116,7 +116,7 @@ function set_secret( $token_name, $token_value ) {
 			$secrets_file = create_secret_file();
 		} catch ( \Throwable $th ) {
 			$result = new WP_Error( 'broke', __( 'Token could not be saved', 'build_hooks' ) );
-			echo $result->get_error_message();
+			echo esc_html( $result->get_error_message() );
 		}
 	}
 
@@ -421,7 +421,7 @@ function build_hooks() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Current Webhook</legend>
-								<input type="text" class="full-input" disabled read-only value="<?php echo $url; ?>" size="96">
+								<input type="text" class="full-input" disabled read-only value="<?php echo esc_attr( $url ); ?>" size="96">
 							</fieldset>
 						</td>
 					</tr>
