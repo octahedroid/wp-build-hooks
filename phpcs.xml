@@ -17,22 +17,26 @@
 	<file>includes</file>
 	<file>wp-build-hooks.php</file>
 
-	<!-- Check for PHP cross-version compatibility. -->
-	<config name="testVersion" value="7.2-"/>
-	<rule ref="PHPCompatibilityWP"/>
-
-	<!-- WordPress coding standards. -->
-	<rule ref="WordPress">
-		<!-- Exclude as plugin adheres to the PSR-4 standard. -->
-		<exclude name="WordPress.Files.FileName"/>
-	</rule>
-
 	<!-- Rules -->
 	<rule ref="WordPress-Core">
 		<!-- Definitely should not be added back -->
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
 		<exclude name="WordPress.PHP.DisallowShortTernary.Found"/>
 		<exclude name="WordPress.CodeAnalysis.AssignmentInCondition.Found"/>
+
+		<!-- Should probably not be added back -->
+		<exclude name="PHPCompatibility.Keywords.ForbiddenNamesAsDeclared.objectFound"/>
+		<exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid"/>
+		<exclude name="Squiz.PHP.DisallowMultipleAssignments.FoundInControlStructure"/>
+		<exclude name="WordPress.DateTime.RestrictedFunctions.date_date"/>
+
+
+		<!-- Should maybe Add Back Later -->
+		<exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
+		<exclude name="PEAR.Functions.FunctionCallSignature.ContentAfterOpenBracket"/>
+		<exclude name="PEAR.Functions.FunctionCallSignature.CloseBracketLine"/>
+		<exclude name="PEAR.Functions.FunctionCallSignature.MultipleArguments"/>
+		<exclude name="WordPress.NamingConventions.ValidVariableName" />
 	</rule>
 
 	<!-- Tests for inline documentation of code -->
@@ -49,6 +53,11 @@
 		<properties>
 			<property name="additionalWordDelimiters" value="."/>
 		</properties>
+	</rule>
+
+	<!-- Check for PHP cross-version compatibility. -->
+	<rule ref="PHPCompatibilityWP">
+		<config name="testVersion" value="7.2-"/>
 	</rule>
 
 	<!-- Enforce short array syntax -->
