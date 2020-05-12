@@ -502,20 +502,20 @@ function build_hooks() {
 								<td>
 									<span class="notice notice-<?php echo esc_attr( $status[ $workflow['status'] ] ); ?>">
 										<a target="_blank" href="<?php echo esc_attr( $workflow['url'] ); ?>">
-											<?php echo $workflow['status']; ?>
+											<?php echo esc_html( $workflow['status'] ); ?>
 										</a>
 									</span>
 								</td>
 								<td>
-									<a target="_blank" href="<?php echo $workflow['url']; ?>">
-										<?php echo $workflow['name']; ?>
+									<a target="_blank" href="<?php echo esc_attr( $workflow['url'] ); ?>">
+										<?php echo esc_html( $workflow['name'] ); ?>
 									</a>
 								</td>
 								<td>
-									<?php echo $workflow['started']; ?>
+									<?php echo esc_html( $workflow['started'] ); ?>
 								</td>
 								<td>
-									<?php echo $workflow['duration']; ?>
+									<?php echo esc_html( $workflow['duration'] ); ?>
 								</td>
 							</tr>
 						<?php } ?>
@@ -553,10 +553,10 @@ function build_hooks_settings() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Type</legend>
-								<select name="<?php echo BUILD_HOOK_TYPE_OPTION; ?>" id="build_hooks_type">
+								<select name="<?php echo esc_attr( BUILD_HOOK_TYPE_OPTION ); ?>" id="build_hooks_type">
 									<option value="">Select type...</option>
 									<?php foreach ( BUILD_HOOK_TYPES as $key => $value ) { ?>
-										<option value="<?php echo $key; ?>" <?php echo $type === $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
+										<option value="<?php echo esc_attr( $key ); ?>" <?php echo $type === $key ? 'selected' : ''; ?>><?php echo esc_html( $value ); ?></option>
 									<?php } ?>
 								</select>
 							</fieldset>
@@ -568,7 +568,7 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Webhook</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_OPTION . $type; ?>" value="<?php echo $url; ?>" size="96">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_OPTION . $type ); ?>" value="<?php echo esc_attr( $url ); ?>" size="96">
 									<p class="description" id="webhooks-description">Please provide the url to send a POST request and trigger a new build whenever you publish content. <br/>E.g.: <em>https://api.provider.com/build_hooks/XcXdfa587588ddb1b80c5XXx</em></p>
 								</fieldset>
 							</td>
