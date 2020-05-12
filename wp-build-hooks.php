@@ -223,7 +223,7 @@ function circle_ci_pipeline( $id ) {
 		return $data;
 	} catch ( \Throwable $th ) {
 		$result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', 'build_hooks' ) );
-		echo $result->get_error_message();
+		echo esc_html( $result->get_error_message() );
 	}
 }
 
@@ -252,7 +252,7 @@ function circle_ci_pipelines() {
 		}
 	} catch ( \Throwable $th ) {
 		$result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', 'build_hooks' ) );
-		echo $result->get_error_message();
+		echo esc_html( $result->get_error_message() );
 	}
 
 	$workflows = [];
@@ -297,7 +297,7 @@ function circle_ci_pipelines() {
 			}
 		} catch ( \Throwable $th ) {
 			$result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', 'build_hooks' ) );
-			echo $result->get_error_message();
+			echo esc_html( $result->get_error_message() );
 		}
 	}
 
