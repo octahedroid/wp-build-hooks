@@ -420,7 +420,7 @@ function build_hooks() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Current Webhook</legend>
-								<input type="text" class="full-input" disabled read-only value="<?php echo esc_attr( $url ); ?>" size="96">
+								<input type="text" class="full-input" disabled read-only value="<?php echo esc_url( $url ); ?>" size="96">
 							</fieldset>
 						</td>
 					</tr>
@@ -470,12 +470,12 @@ function build_hooks() {
 							</form>
 						</td>
 						<td>
-							<a class="button button-secondary" target="_blank" href="<?php echo esc_attr( str_replace( [ '{environment}', '{site}' ], [ 'test', $site ], $site_url ) ); ?>">
+							<a class="button button-secondary" target="_blank" href="<?php echo esc_url( str_replace( [ '{environment}', '{site}' ], [ 'test', $site ], $site_url ) ); ?>">
 								Visit Test Site
 							</a>
 						</td>
 						<td>
-							<a class="button button-tertiary" target="_blank" href="<?php echo esc_attr( str_replace( [ '{environment}', '{site}' ], [ 'live', $site ], $site_url ) ); ?>">
+							<a class="button button-tertiary" target="_blank" href="<?php echo esc_url( str_replace( [ '{environment}', '{site}' ], [ 'live', $site ], $site_url ) ); ?>">
 								Visit Live Site
 							</a>
 						</td>
@@ -500,13 +500,13 @@ function build_hooks() {
 							<tr>
 								<td>
 									<span class="notice notice-<?php echo esc_attr( $status[ $workflow['status'] ] ); ?>">
-										<a target="_blank" href="<?php echo esc_attr( $workflow['url'] ); ?>">
+										<a target="_blank" href="<?php echo esc_url( $workflow['url'] ); ?>">
 											<?php echo esc_html( $workflow['status'] ); ?>
 										</a>
 									</span>
 								</td>
 								<td>
-									<a target="_blank" href="<?php echo esc_attr( $workflow['url'] ); ?>">
+									<a target="_blank" href="<?php echo esc_url( $workflow['url'] ); ?>">
 										<?php echo esc_html( $workflow['name'] ); ?>
 									</a>
 								</td>
@@ -581,7 +581,8 @@ function build_hooks_settings() {
 								<fieldset>
 									<legend class="screen-reader-text">Repository</legend>
 									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_REPO_OPTION ); ?>" value="<?php echo esc_attr( $circleci_repo ); ?>" size="96">
-									<p class="description" id="circle_ci-description">
+									<p class="d
+									ription" id="circle_ci-description">
 										Please provide your repository information.<br/> E.g.: <em>my-provider/my-username/my-repo-name</em> or using repository url: <em>https://my-provider.com/my-username/my-repo-name</em>
 									</p>
 								</fieldset>
