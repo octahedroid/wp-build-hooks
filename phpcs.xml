@@ -23,7 +23,6 @@
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
 		<exclude name="WordPress.PHP.DisallowShortTernary.Found"/>
 		<exclude name="WordPress.CodeAnalysis.AssignmentInCondition.Found"/>
-		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
 
 		<!-- Should probably not be added back -->
 		<exclude name="PHPCompatibility.Keywords.ForbiddenNamesAsDeclared.objectFound"/>
@@ -31,14 +30,17 @@
 		<exclude name="Squiz.PHP.DisallowMultipleAssignments.FoundInControlStructure"/>
 		<exclude name="WordPress.DateTime.RestrictedFunctions.date_date"/>
 
-
 		<!-- Should maybe Add Back Later -->
 		<exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
+		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
 		<exclude name="PEAR.Functions.FunctionCallSignature.ContentAfterOpenBracket"/>
 		<exclude name="PEAR.Functions.FunctionCallSignature.CloseBracketLine"/>
 		<exclude name="PEAR.Functions.FunctionCallSignature.MultipleArguments"/>
 		<exclude name="WordPress.NamingConventions.ValidVariableName" />
 	</rule>
+
+	<!-- WordPress coding standards. -->
+	<rule ref="WordPress" />
 
 	<!-- Tests for inline documentation of code -->
 	<rule ref="WordPress-Docs">
