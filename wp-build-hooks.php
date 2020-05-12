@@ -457,7 +457,7 @@ function build_hooks() {
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
 								<div class="submit">
 									<input name="action" value="trigger_deploy" type="hidden">
-									<input name="submit" id="submit" <?php echo echo $disable ? 'disabled=disabled' : ''; ?> class="button button-primary" value="Deploy to Live" type="submit">
+									<input name="submit" id="submit" <?php echo $disable ? 'disabled=disabled' : ''; ?> class="button button-primary" value="Deploy to Live" type="submit">
 								</div>
 							</form>
 						</td>
@@ -540,7 +540,7 @@ function build_hooks_settings() {
 		​
 		<hr />
 		<h2>Web Hook</h2>
-		<form id="hook_settings_form" method="post" action="<?php $action; ?>" novalidate="novalidate">
+		<form id="hook_settings_form" method="post" action="<?php echo $action; ?>" novalidate="novalidate">
 			<table class="form-table">
 				<tbody>
 					<tr>
