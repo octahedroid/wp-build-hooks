@@ -539,16 +539,19 @@ function build_hooks_settings() {
 		$circleci_token = $ci_options['token'];
 		$circleci_site  = $ci_options['site'];
 	}
+
 	$settings = get_option( BUILD_HOOK_SETTINGS_OPTION );
 	$trigger  = get_option( BUILD_HOOK_TRIGGER_OPTION );
 	$roles    = get_editable_roles();
+
+	$action = isset( $_SERVER['PHP_SELF'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PHP_SELF'] ) ) : null;
 	?>
 	<div class="wrap">
 		<h1>Settings</h1>
 		​
 		<hr />
 		<h2>Web Hook</h2>
-		<form id="hook_settings_form" method="post" action="<?php $_SERVER['PHP_SELF']; ?>" novalidate="novalidate">
+		<form id="hook_settings_form" method="post" action="<?php $action; ?>" novalidate="novalidate">
 			<table class="form-table">
 				<tbody>
 					<tr>
