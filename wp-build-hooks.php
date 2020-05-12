@@ -364,13 +364,12 @@ function add_hook_actions() {
 
 		if ( $_POST['action'] === 'trigger_deploy' ) {
 			$options['json'] = [
-				'parameters' =>
-					[
-						'run-build-and-deploy-master' => false,
-						'run-build-and-deploy-pr'     => false,
-						'run-build-and-deploy-mu'     => false,
-						'run-deploy-test-to-live'     => true,
-					],
+				'parameters' => [
+					'run-build-and-deploy-master' => false,
+					'run-build-and-deploy-pr'     => false,
+					'run-build-and-deploy-mu'     => false,
+					'run-deploy-test-to-live'     => true,
+				],
 			];
 			trigger_build( $options );
 			return;
