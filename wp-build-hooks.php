@@ -102,7 +102,7 @@ function create_secret_file() {
 }
 
 function write_secret_file( string $content = '' ) {
-	return file_put_contents( BUILD_HOOK_SECRET_FILE_PATH, $content );
+	return wp_file_put_contents( BUILD_HOOK_SECRET_FILE_PATH, $content );
 }
 
 function set_secret( $token_name, $token_value ) {
@@ -122,7 +122,7 @@ function set_secret( $token_name, $token_value ) {
 
 	$json_data                = json_decode( $secrets_file, true );
 	$json_data[ $token_name ] = $token_value;
-	write_secret_file( json_encode( $json_data ) );
+	write_secret_file( wp_json_encode( $json_data ) );
 }
 
 function get_circle_ci_repo() {
@@ -714,7 +714,7 @@ function clean_secret_token() {
 	if ( $secrets_file ) {
 		$json_data = json_decode( $secrets_file, true );
 		unset( $json_data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME ] );
-		write_secret_file( json_encode( $json_data, true ) );
+		write_secret_file( wp_json_encode( $json_data, true ) );
 	}
 }
 function clear_options_pantheon() {
