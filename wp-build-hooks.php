@@ -102,7 +102,7 @@ function create_secret_file() {
 }
 
 function write_secret_file( string $content = '' ) {
-	return wp_file_put_contents( BUILD_HOOK_SECRET_FILE_PATH, $content );
+	return file_put_contents( BUILD_HOOK_SECRET_FILE_PATH, $content );
 }
 
 function set_secret( $token_name, $token_value ) {
