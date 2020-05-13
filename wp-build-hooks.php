@@ -8,7 +8,7 @@
 require plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
 define( 'BUILD_HOOKS_COMMANDS_PATH', 'includes/commands/' );
-require_once( BUILD_HOOKS_COMMANDS_PATH . 'build-hooks.php' );
+require_once BUILD_HOOKS_COMMANDS_PATH . 'build-hooks.php';
 
 add_action( 'admin_menu', 'register_web_hooks_admin_page' );
 
@@ -116,13 +116,13 @@ function set_secret( $token_name, $token_value ) {
 			$secrets_file = create_secret_file();
 		} catch ( \Throwable $th ) {
 			$result = new WP_Error( 'broke', __( 'Token could not be saved', 'build_hooks' ) );
-			echo $result->get_error_message();
+			echo esc_html( $result->get_error_message() );
 		}
 	}
 
 	$json_data                = json_decode( $secrets_file, true );
 	$json_data[ $token_name ] = $token_value;
-	write_secret_file( json_encode( $json_data ) );
+	write_secret_file( wp_json_encode( $json_data ) );
 }
 
 function get_circle_ci_repo() {
@@ -223,7 +223,7 @@ function circle_ci_pipeline( $id ) {
 		return $data;
 	} catch ( \Throwable $th ) {
 		$result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', 'build_hooks' ) );
-		echo $result->get_error_message();
+		echo esc_html( $result->get_error_message() );
 	}
 }
 
@@ -252,7 +252,7 @@ function circle_ci_pipelines() {
 		}
 	} catch ( \Throwable $th ) {
 		$result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', 'build_hooks' ) );
-		echo $result->get_error_message();
+		echo esc_html( $result->get_error_message() );
 	}
 
 	$workflows = [];
@@ -297,7 +297,7 @@ function circle_ci_pipelines() {
 			}
 		} catch ( \Throwable $th ) {
 			$result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', 'build_hooks' ) );
-			echo $result->get_error_message();
+			echo esc_html( $result->get_error_message() );
 		}
 	}
 
@@ -329,22 +329,22 @@ function register_web_hooks_admin_page() {
 }
 
 function set_options_pantheon( $data ) {
-	$type     = $data[ BUILD_HOOK_TYPE_OPTION ] ? $data[ BUILD_HOOK_TYPE_OPTION ] : null;
-	$settings = $data[ BUILD_HOOK_SETTINGS_OPTION ] ? $data[ BUILD_HOOK_SETTINGS_OPTION ] : null;
-	$trigger  = $data[ BUILD_HOOK_TRIGGER_OPTION ] ? $data[ BUILD_HOOK_TRIGGER_OPTION ] : null;
+	$type     = $data[ BUILD_HOOK_TYPE_OPTION ] ?: null;
+	$settings = $data[ BUILD_HOOK_SETTINGS_OPTION ] ?: null;
+	$trigger  = $data[ BUILD_HOOK_TRIGGER_OPTION ] ?: null;
 	update_option( BUILD_HOOK_TYPE_OPTION, $type );
 	update_option( BUILD_HOOK_SETTINGS_OPTION, $settings );
 	update_option( BUILD_HOOK_TRIGGER_OPTION, $trigger );
 
 	if ( $type === 'circle_ci' ) {
-		$circleci_repo  = $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] ? $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] : null;
-		$circleci_token = $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] ? $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] : null;
-		$circleci_site  = $data[ BUILD_HOOK_CIRCLECI_SITE ] ? $data[ BUILD_HOOK_CIRCLECI_SITE ] : null;
+		$circleci_repo  = $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] ?: null;
+		$circleci_token = $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] ?: null;
+		$circleci_site  = $data[ BUILD_HOOK_CIRCLECI_SITE ] ?: null;
 		update_option( BUILD_HOOK_CIRCLECI_REPO_OPTION, $circleci_repo );
 		update_option( BUILD_HOOK_CIRCLECI_SITE, $circleci_site );
 		set_circle_ci_token( $circleci_token );
 	} else {
-		$web_hook = $data[ BUILD_HOOK_OPTION . $type ] ? $data[ BUILD_HOOK_OPTION . $type ] : null;
+		$web_hook = $data[ BUILD_HOOK_OPTION . $type ] ?: null;
 		update_option( BUILD_HOOK_OPTION . $type, $web_hook );
 		set_circle_ci_token( null );
 	}
@@ -352,26 +352,36 @@ function set_options_pantheon( $data ) {
 
 function add_hook_actions() {
 	if ( isset( $_POST['action'] ) ) {
-		if ( $_POST['action'] === 'update_option_build_hooks' ) {
+		$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
+
+		// Prevent processing without nonce verification.
+		if (
+			! isset( $_POST[ "{$action}_nonce" ] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ "{$action}_nonce" ] ) ), $action )
+		) {
+			return;
+		}
+
+		if ( $action === 'update_option_build_hooks' ) {
 			set_options_pantheon( $_POST );
 			return;
 		}
 
-		if ( $_POST['action'] === 'trigger_build' ) {
+		if ( $action === 'trigger_build' ) {
 			trigger_build();
 			return;
 		}
 
-		if ( $_POST['action'] === 'trigger_deploy' ) {
+		if ( $action === 'trigger_deploy' ) {
 			$options['json'] = [
-				'parameters' =>
-					[
-						'run-build-and-deploy-master' => false,
-						'run-build-and-deploy-pr'     => false,
-						'run-build-and-deploy-mu'     => false,
-						'run-deploy-test-to-live'     => true,
-					],
+				'parameters' => [
+					'run-build-and-deploy-master' => false,
+					'run-build-and-deploy-pr'     => false,
+					'run-build-and-deploy-mu'     => false,
+					'run-deploy-test-to-live'     => true,
+				],
 			];
+
 			trigger_build( $options );
 			return;
 		}
@@ -421,7 +431,7 @@ function build_hooks() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Current Webhook</legend>
-								<input type="text" class="full-input" disabled read-only value="<?php echo $url; ?>" size="96">
+								<input type="text" class="full-input" disabled read-only value="<?php echo esc_url( $url ); ?>" size="96">
 							</fieldset>
 						</td>
 					</tr>
@@ -436,15 +446,11 @@ function build_hooks() {
 					<tr>
 						<td>
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
+								<?php wp_nonce_field( 'trigger_build', 'trigger_build_nonce' ); ?>
+
 								<div class="submit">
 									<input name="action" value="trigger_build" type="hidden">
-									<input name="submit" id="submit"
-									<?php
-									if ( $disable ) {
-										echo 'disabled=disabled';
-									}
-									?>
-									class="button button-primary" value="Trigger Build" type="submit">
+									<input name="submit" id="submit" <?php echo $disable ? 'disabled=disabled' : ''; ?> class="button button-primary" value="Trigger Build" type="submit">
 								</div>
 							</form>
 						</td>
@@ -458,25 +464,21 @@ function build_hooks() {
 					<tr>
 						<td>
 							<form method="post" action="/wp-admin/admin.php?page=build-hooks" novalidate="novalidate">
+								<?php wp_nonce_field( 'trigger_deploy', 'trigger_deploy_nonce' ); ?>
+
 								<div class="submit">
 									<input name="action" value="trigger_deploy" type="hidden">
-									<input name="submit" id="submit"
-									<?php
-									if ( $disable ) {
-										echo 'disabled=disabled';
-									}
-									?>
-									class="button button-primary" value="Deploy to Live" type="submit">
+									<input name="submit" id="submit" <?php echo $disable ? 'disabled=disabled' : ''; ?> class="button button-primary" value="Deploy to Live" type="submit">
 								</div>
 							</form>
 						</td>
 						<td>
-							<a class="button button-secondary" target="_blank" href="<?php echo str_replace( [ '{environment}', '{site}' ], [ 'test', $site ], $site_url ); ?>">
+							<a class="button button-secondary" target="_blank" href="<?php echo esc_url( str_replace( [ '{environment}', '{site}' ], [ 'test', $site ], $site_url ) ); ?>">
 								Visit Test Site
 							</a>
 						</td>
 						<td>
-							<a class="button button-tertiary" target="_blank" href="<?php echo str_replace( [ '{environment}', '{site}' ], [ 'live', $site ], $site_url ); ?>">
+							<a class="button button-tertiary" target="_blank" href="<?php echo esc_url( str_replace( [ '{environment}', '{site}' ], [ 'live', $site ], $site_url ) ); ?>">
 								Visit Live Site
 							</a>
 						</td>
@@ -500,22 +502,22 @@ function build_hooks() {
 						<?php foreach ( $workflows as $key => $workflow ) { ?>
 							<tr>
 								<td>
-									<span class="notice notice-<?php echo $status[ $workflow['status'] ]; ?>">
-										<a target="_blank" href="<?php echo $workflow['url']; ?>">
-											<?php echo $workflow['status']; ?>
+									<span class="notice notice-<?php echo esc_attr( $status[ $workflow['status'] ] ); ?>">
+										<a target="_blank" href="<?php echo esc_url( $workflow['url'] ); ?>">
+											<?php echo esc_html( $workflow['status'] ); ?>
 										</a>
 									</span>
 								</td>
 								<td>
-									<a target="_blank" href="<?php echo $workflow['url']; ?>">
-										<?php echo $workflow['name']; ?>
+									<a target="_blank" href="<?php echo esc_url( $workflow['url'] ); ?>">
+										<?php echo esc_html( $workflow['name'] ); ?>
 									</a>
 								</td>
 								<td>
-									<?php echo $workflow['started']; ?>
+									<?php echo esc_html( $workflow['started'] ); ?>
 								</td>
 								<td>
-									<?php echo $workflow['duration']; ?>
+									<?php echo esc_html( $workflow['duration'] ); ?>
 								</td>
 							</tr>
 						<?php } ?>
@@ -529,6 +531,7 @@ function build_hooks() {
 function build_hooks_settings() {
 	$type = get_option( BUILD_HOOK_TYPE_OPTION );
 	$url  = build_hook_option();
+
 	if ( $type === 'circle_ci' ) {
 		$ci_options     = circle_ci_options( false );
 		$url            = $ci_options['url'];
@@ -536,6 +539,7 @@ function build_hooks_settings() {
 		$circleci_token = $ci_options['token'];
 		$circleci_site  = $ci_options['site'];
 	}
+
 	$settings = get_option( BUILD_HOOK_SETTINGS_OPTION );
 	$trigger  = get_option( BUILD_HOOK_TRIGGER_OPTION );
 	$roles    = get_editable_roles();
@@ -545,7 +549,7 @@ function build_hooks_settings() {
 		​
 		<hr />
 		<h2>Web Hook</h2>
-		<form id="hook_settings_form" method="post" action="<?php $_SERVER['PHP_SELF']; ?>" novalidate="novalidate">
+		<form id="hook_settings_form" method="post" action="" novalidate="novalidate">
 			<table class="form-table">
 				<tbody>
 					<tr>
@@ -553,10 +557,10 @@ function build_hooks_settings() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Type</legend>
-								<select name="<?php echo BUILD_HOOK_TYPE_OPTION; ?>" id="build_hooks_type">
+								<select name="<?php echo esc_attr( BUILD_HOOK_TYPE_OPTION ); ?>" id="build_hooks_type">
 									<option value="">Select type...</option>
 									<?php foreach ( BUILD_HOOK_TYPES as $key => $value ) { ?>
-										<option value="<?php echo $key; ?>" <?php echo $type === $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
+										<option value="<?php echo esc_attr( $key ); ?>" <?php echo $type === $key ? 'selected' : ''; ?>><?php echo esc_html( $value ); ?></option>
 									<?php } ?>
 								</select>
 							</fieldset>
@@ -568,7 +572,7 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Webhook</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_OPTION . $type; ?>" value="<?php echo $url; ?>" size="96">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_OPTION . $type ); ?>" value="<?php echo esc_attr( $url ); ?>" size="96">
 									<p class="description" id="webhooks-description">Please provide the url to send a POST request and trigger a new build whenever you publish content. <br/>E.g.: <em>https://api.provider.com/build_hooks/XcXdfa587588ddb1b80c5XXx</em></p>
 								</fieldset>
 							</td>
@@ -581,8 +585,9 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Repository</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_REPO_OPTION; ?>" value="<?php echo $circleci_repo; ?>" size="96">
-									<p class="description" id="circle_ci-description">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_REPO_OPTION ); ?>" value="<?php echo esc_attr( $circleci_repo ); ?>" size="96">
+									<p class="d
+									ription" id="circle_ci-description">
 										Please provide your repository information.<br/> E.g.: <em>my-provider/my-username/my-repo-name</em> or using repository url: <em>https://my-provider.com/my-username/my-repo-name</em>
 									</p>
 								</fieldset>
@@ -593,7 +598,7 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Token</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_JOB_TOKEN; ?>" value="<?php echo $circleci_token; ?>" size="96">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_JOB_TOKEN ); ?>" value="<?php echo esc_attr( $circleci_token ); ?>" size="96">
 											<p class="description" id="circle_ci-description">Please provide the api token for Circle CI, for more information please go to <a href="https://circleci.com/docs/2.0/managing-api-tokens/" >Managing API Tokens</a></p>
 								</fieldset>
 							</td>
@@ -603,7 +608,7 @@ function build_hooks_settings() {
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">Front-end site</legend>
-									<input type="text" class="full-input" name="<?php echo BUILD_HOOK_CIRCLECI_SITE; ?>" value="<?php echo $circleci_site; ?>" size="96">
+									<input type="text" class="full-input" name="<?php echo esc_attr( BUILD_HOOK_CIRCLECI_SITE ); ?>" value="<?php echo esc_attr( $circleci_site ); ?>" size="96">
 											<p class="description" id="circle_ci-site">Please provide the front-end pantheon site name.</p>
 								</fieldset>
 							</td>
@@ -621,12 +626,12 @@ function build_hooks_settings() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Roles</legend>
-								<input type="hidden" name="<?php echo BUILD_HOOK_SETTINGS_OPTION; ?>[]" value="administrator">
+								<input type="hidden" name="<?php echo esc_attr( BUILD_HOOK_SETTINGS_OPTION ); ?>[]" value="administrator">
 								<?php
 								foreach ( $roles as $key => $role ) {
 									?>
-									<label for="<?php echo BUILD_HOOK_SETTINGS_OPTION . '_' . $key; ?>">
-										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $settings, true ) ? 'checked' : ''; ?> name="<?php echo BUILD_HOOK_SETTINGS_OPTION; ?>[]" id="<?php echo BUILD_HOOK_SETTINGS_OPTION . '_' . $key; ?>" value="<?php echo $key; ?>"> <?php echo $role['name']; ?>
+									<label for="<?php echo esc_attr( BUILD_HOOK_SETTINGS_OPTION . '_' . $key ); ?>">
+										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $settings, true ) ? 'checked' : ''; ?> name="<?php echo esc_attr( BUILD_HOOK_SETTINGS_OPTION ); ?>[]" id="<?php echo esc_attr( BUILD_HOOK_SETTINGS_OPTION . '_' . $key ); ?>" value="<?php echo esc_attr( $key ); ?>"> <?php echo esc_html( $role['name'] ); ?>
 									</label><br />
 									<?php
 								}
@@ -646,12 +651,12 @@ function build_hooks_settings() {
 						<td>
 							<fieldset>
 								<legend class="screen-reader-text">Roles</legend>
-								<input type="hidden" name="<?php echo BUILD_HOOK_TRIGGER_OPTION; ?>[]" value="administrator">
+								<input type="hidden" name="<?php echo esc_attr( BUILD_HOOK_TRIGGER_OPTION ); ?>[]" value="administrator">
 								<?php
 								foreach ( $roles as $key => $role ) {
 									?>
-									<label for="<?php echo BUILD_HOOK_TRIGGER_OPTION . '_' . $key; ?>">
-										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $trigger, true ) ? 'checked' : ''; ?> name="<?php echo BUILD_HOOK_TRIGGER_OPTION; ?>[]" id="<?php echo $trigger_option . '_' . $key; ?>" value="<?php echo $key; ?>"> <?php echo $role['name']; ?>
+									<label for="<?php echo esc_attr( BUILD_HOOK_TRIGGER_OPTION . '_' . $key ); ?>">
+										<input type="checkbox" <?php echo $key === 'administrator' ? 'checked disabled' : ''; ?> <?php echo in_array( $key, $trigger, true ) ? 'checked' : ''; ?> name="<?php echo esc_attr( BUILD_HOOK_TRIGGER_OPTION ); ?>[]" id="<?php echo esc_attr( $trigger_option . '_' . $key ); ?>" value="<?php echo esc_attr( $key ); ?>"> <?php echo esc_html( $role['name'] ); ?>
 									</label><br />
 									<?php
 								}
@@ -661,6 +666,9 @@ function build_hooks_settings() {
 					</tr>
 				</tbody>
 			</table>
+
+			<?php wp_nonce_field( 'update_option_build_hooks', 'update_option_build_hooks_nonce' ); ?>
+
 			<div class="submit">
 				<input name="action" value="update_option_build_hooks" type="hidden">
 				<input name="submit" id="submit" class="button button-primary" value="Save changes" type="submit">
@@ -718,7 +726,7 @@ function clean_secret_token() {
 	if ( $secrets_file ) {
 		$json_data = json_decode( $secrets_file, true );
 		unset( $json_data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN_NAME ] );
-		write_secret_file( json_encode( $json_data, true ) );
+		write_secret_file( wp_json_encode( $json_data, true ) );
 	}
 }
 function clear_options_pantheon() {
