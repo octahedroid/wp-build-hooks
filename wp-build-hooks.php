@@ -355,7 +355,10 @@ function add_hook_actions() {
 		$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
 
 		// Prevent processing without nonce verification.
-		if ( ! isset( $_POST[ "{$action}_nonce" ] ) || ! wp_verify_nonce( wp_unslash( $_POST[ "{$action}_nonce" ] ), $action ) ) {
+		if (
+			! isset( $_POST[ "{$action}_nonce" ] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ "{$action}_nonce" ] ) ), $action )
+		) {
 			return;
 		}
 
