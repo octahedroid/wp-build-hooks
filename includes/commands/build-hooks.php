@@ -31,7 +31,7 @@ class BuildHooksCommand extends WP_CLI_Command {
 
 		$options['json'] = [
 			'parameters' => [
-				'wordpress-url'               => $wordpressUrl,
+				'data-source-url'             => $wordpressUrl,
 				'destination-env'             => $destinationEnv,
 				'run-build-and-deploy-master' => false,
 				'run-build-and-deploy-pr'     => false,
