@@ -23,7 +23,7 @@ const BUILD_HOOK_DOMAINS                 = [
 		'separator' => '-'
 	],
 	'pantheonfrontend.website'    => [
-		'name'      => 'pantheonfrontend.website',
+		'name'      => 'my.pantheonfrontend.website',
 		'separator' => '--'
 	],
 ];
@@ -385,7 +385,15 @@ function add_hook_actions() {
 		}
 
 		if ( $action === 'trigger_build' ) {
-			trigger_build();
+			trigger_build(
+				[
+					'json' => [
+						'parameters' => [
+							'destination-env' => 'test',
+						],
+					]
+				]
+			);
 			return;
 		}
 
