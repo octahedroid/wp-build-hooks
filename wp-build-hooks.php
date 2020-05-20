@@ -352,9 +352,9 @@ function set_options_pantheon( $data ) {
 	update_option( BUILD_HOOK_TRIGGER_OPTION, $trigger );
 
 	if ( $type === 'circle_ci' ) {
-		$circleci_repo  = $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] ?: null;
-		$circleci_token = $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] ?: null;
-		$circleci_site  = $data[ BUILD_HOOK_CIRCLECI_SITE ] ?: null;
+		$circleci_repo    = $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] ?: null;
+		$circleci_token   = $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] ?: null;
+		$circleci_site    = $data[ BUILD_HOOK_CIRCLECI_SITE ] ?: null;
 		$circleci_domain  = $data[ BUILD_HOOK_CIRCLECI_DOMAIN ] ?: null;
 		update_option( BUILD_HOOK_CIRCLECI_REPO_OPTION, $circleci_repo );
 		update_option( BUILD_HOOK_CIRCLECI_SITE, $circleci_site );
