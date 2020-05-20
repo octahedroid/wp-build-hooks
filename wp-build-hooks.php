@@ -18,8 +18,8 @@ const BUILD_HOOK_TYPES                   = [
 	'netlify'   => 'Netlify',
 ];
 const BUILD_HOOK_DOMAINS                 = [
-	'pantheon.io' => [
-		'name' 	    => 'pantheon.io',
+	'pantheonsite.io' => [
+		'name' 	    => 'pantheonsite.io',
 		'separator' => '-'
 	],
 	'pantheonfrontend.website'    => [
