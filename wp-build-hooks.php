@@ -13,19 +13,19 @@ require_once BUILD_HOOKS_COMMANDS_PATH . 'build-hooks.php';
 add_action( 'admin_menu', 'register_web_hooks_admin_page' );
 
 const BUILD_HOOK_TYPES                   = [
-	'circle_ci' => 'CircleCI',
-	'gatsby'    => 'Gatsby Cloud',
-	'netlify'   => 'Netlify',
+	'circle_ci'     => 'CircleCI',
+	'gatsby'        => 'Gatsby Cloud',
+	'netlify'       => 'Netlify',
 	'circle_ci_orb' => 'Pantheon Orb CircleCI',
 ];
 const BUILD_HOOK_DOMAINS                 = [
 	'pantheonsite.io'             => [
-		'name' 	    => 'pantheonsite.io',
-		'separator' => '-'
+		'name'      => 'pantheonsite.io',
+		'separator' => '-',
 	],
 	'my.pantheonfrontend.website' => [
 		'name'      => 'my.pantheonfrontend.website',
-		'separator' => '--'
+		'separator' => '--',
 	],
 ];
 const BUILD_HOOK_TYPE_OPTION             = '_build_hooks_type';
@@ -189,8 +189,8 @@ function circle_ci_options( $obfuscate = true ) {
 		'repo'      => get_option( BUILD_HOOK_CIRCLECI_REPO_OPTION ),
 		'token'     => $token,
 		'site'      => get_option( BUILD_HOOK_CIRCLECI_SITE ),
-		'domain'    => $domain ? BUILD_HOOK_DOMAINS[$domain]['name'] : '',
-		'separator' => $domain ? BUILD_HOOK_DOMAINS[$domain]['separator']: '',
+		'domain'    => $domain ? BUILD_HOOK_DOMAINS[ $domain ]['name'] : '',
+		'separator' => $domain ? BUILD_HOOK_DOMAINS[ $domain ]['separator'] : '',
 		'options'   => [],
 	];
 }
@@ -353,10 +353,10 @@ function set_options_pantheon( $data ) {
 	update_option( BUILD_HOOK_TRIGGER_OPTION, $trigger );
 
 	if ( $type === 'circle_ci_orb' || $type === 'circle_ci' ) {
-		$circleci_repo    = $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] ?: null;
-		$circleci_token   = $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] ?: null;
-		$circleci_site    = $data[ BUILD_HOOK_CIRCLECI_SITE ] ?: null;
-		$circleci_domain  = $data[ BUILD_HOOK_CIRCLECI_DOMAIN ] ?: null;
+		$circleci_repo   = $data[ BUILD_HOOK_CIRCLECI_REPO_OPTION ] ?: null;
+		$circleci_token  = $data[ BUILD_HOOK_CIRCLECI_JOB_TOKEN ] ?: null;
+		$circleci_site   = $data[ BUILD_HOOK_CIRCLECI_SITE ] ?: null;
+		$circleci_domain = $data[ BUILD_HOOK_CIRCLECI_DOMAIN ] ?: null;
 		update_option( BUILD_HOOK_CIRCLECI_REPO_OPTION, $circleci_repo );
 		update_option( BUILD_HOOK_CIRCLECI_SITE, $circleci_site );
 		update_option( BUILD_HOOK_CIRCLECI_DOMAIN, $circleci_domain );
@@ -397,7 +397,7 @@ function add_hook_actions() {
 				];
 			}
 
-			trigger_build($options);
+			trigger_build( $options );
 			return;
 		}
 
@@ -488,7 +488,7 @@ function build_hooks() {
 					</tr>
 				</tbody>
 			</table>
-			<?php if ($type === 'circle_ci_orb') : ?>
+			<?php if ( $type === 'circle_ci_orb' ) : ?>
 				<h2>Deploy</h2>
 				<hr />
 				<table >
@@ -505,12 +505,12 @@ function build_hooks() {
 								</form>
 							</td>
 							<td>
-								<a class="button button-secondary" target="_blank" href="<?php echo esc_url( str_replace( [ '{environment}', '{separator}', '{site}', '{domain}', ], [ 'test', $separator, $site, $domain ], $site_url ) ); ?>">
+								<a class="button button-secondary" target="_blank" href="<?php echo esc_url( str_replace( [ '{environment}', '{separator}', '{site}', '{domain}' ], [ 'test', $separator, $site, $domain ], $site_url ) ); ?>">
 									Visit Test Site
 								</a>
 							</td>
 							<td>
-								<a class="button button-tertiary" target="_blank" href="<?php echo esc_url( str_replace( [ '{environment}', '{separator}', '{site}', '{domain}', ], [ 'live', $separator, $site, $domain ], $site_url ) ); ?>">
+								<a class="button button-tertiary" target="_blank" href="<?php echo esc_url( str_replace( [ '{environment}', '{separator}', '{site}', '{domain}' ], [ 'live', $separator, $site, $domain ], $site_url ) ); ?>">
 									Visit Live Site
 								</a>
 							</td>
@@ -566,12 +566,12 @@ function build_hooks_settings() {
 	$url  = build_hook_option();
 
 	if ( $type === 'circle_ci_orb' || $type === 'circle_ci' ) {
-		$ci_options       = circle_ci_options( false );
-		$url              = $ci_options['url'];
-		$circleci_repo    = $ci_options['repo'];
-		$circleci_token   = $ci_options['token'];
-		$circleci_site    = $ci_options['site'];
-		$circleci_domain  = $ci_options['domain'];
+		$ci_options      = circle_ci_options( false );
+		$url             = $ci_options['url'];
+		$circleci_repo   = $ci_options['repo'];
+		$circleci_token  = $ci_options['token'];
+		$circleci_site   = $ci_options['site'];
+		$circleci_domain = $ci_options['domain'];
 	}
 
 	$settings = get_option( BUILD_HOOK_SETTINGS_OPTION );
@@ -600,7 +600,7 @@ function build_hooks_settings() {
 							</fieldset>
 						</td>
 					</tr>
-					<?php if ( $type && $type !== 'circle_ci_orb' && $type !== 'circle_ci') : ?>
+					<?php if ( $type && $type !== 'circle_ci_orb' && $type !== 'circle_ci' ) : ?>
 						<tr>
 							<th scope="row">Webhook</th>
 							<td>
@@ -637,7 +637,7 @@ function build_hooks_settings() {
 								</fieldset>
 							</td>
 						</tr>
-						<?php if ($type === 'circle_ci_orb') : ?>
+						<?php if ( $type === 'circle_ci_orb' ) : ?>
 							<tr>
 								<th scope="row">Front-end site</th>
 								<td>
