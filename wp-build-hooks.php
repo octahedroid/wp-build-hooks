@@ -19,11 +19,11 @@ const BUILD_HOOK_TYPES                   = [
 	'circle_ci_orb' => 'Pantheon Orb CircleCI',
 ];
 const BUILD_HOOK_DOMAINS                 = [
-	'pantheonsite.io' => [
+	'pantheonsite.io'             => [
 		'name' 	    => 'pantheonsite.io',
 		'separator' => '-'
 	],
-	'pantheonfrontend.website'    => [
+	'my.pantheonfrontend.website' => [
 		'name'      => 'my.pantheonfrontend.website',
 		'separator' => '--'
 	],
