@@ -177,8 +177,8 @@ function circle_ci_options( $obfuscate = true ) {
 	}
 
 	$url = str_replace(
-		[ '{repo}', '{branch}', '{token}' ],
-		[ get_circle_ci_repo(), 'master', $token ],
+		[ '{repo}', '{token}' ],
+		[ get_circle_ci_repo(), $token ],
 		$template
 	);
 
