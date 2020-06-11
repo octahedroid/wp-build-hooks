@@ -16,7 +16,7 @@ const BUILD_HOOK_TYPES                   = [
 	'circle_ci'     => 'CircleCI',
 	'gatsby'        => 'Gatsby Cloud',
 	'netlify'       => 'Netlify',
-	'circle_ci_orb' => 'Pantheon Orb CircleCI',
+	'circle_ci_orb' => 'Pantheon CircleCI Orb',
 ];
 const BUILD_HOOK_DOMAINS                 = [
 	'pantheonsite.io'             => [
