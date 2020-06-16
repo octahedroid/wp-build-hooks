@@ -405,6 +405,7 @@ function add_hook_actions() {
 			$options['json'] = [
 				'parameters' => [
 					'run-build-and-deploy-master' => false,
+					'run-build-and-deploy-main' => false,
 					'run-build-and-deploy-pr'     => false,
 					'run-build-and-deploy-mu'     => false,
 					'run-deploy-test-to-live'     => true,
