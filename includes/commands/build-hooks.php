@@ -33,7 +33,7 @@ class BuildHooksCommand extends WP_CLI_Command {
 			'parameters' => [
 				'data-source-url'             => $wordpressUrl,
 				'destination-env'             => $destinationEnv,
-				'run-build-and-deploy-master' => false,
+				'run-build-and-deploy-main' => false,
 				'run-build-and-deploy-pr'     => false,
 				'run-build-and-deploy-mu'     => true,
 				'run-deploy-test-to-live'     => false,

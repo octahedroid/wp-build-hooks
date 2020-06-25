@@ -404,7 +404,7 @@ function add_hook_actions() {
 		if ( $action === 'trigger_deploy' && $type === 'circle_ci_orb' ) {
 			$options['json'] = [
 				'parameters' => [
-					'run-build-and-deploy-master' => false,
+					'run-build-and-deploy-main' => false,
 					'run-build-and-deploy-pr'     => false,
 					'run-build-and-deploy-mu'     => false,
 					'run-deploy-test-to-live'     => true,
