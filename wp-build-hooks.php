@@ -36,6 +36,7 @@ const BUILD_HOOK_CIRCLECI_JOB_TOKEN      = '_build_hooks_circle_ci_token';
 const BUILD_HOOK_CIRCLECI_SITE           = '_build_hooks_circle_ci_site';
 const BUILD_HOOK_CIRCLECI_DOMAIN         = '_build_hooks_circle_ci_domain';
 const BUILD_HOOK_CIRCLECI_WORKFLOW       = '_build_hooks_circle_ci_workflow';
+const BUILD_HOOK_CIRCLECI_BUILDS         = '_build_hooks_circle_ci_builds';
 const BUILD_HOOK_SETTINGS_OPTION         = '_build_hooks_settings';
 const BUILD_HOOK_TRIGGER_OPTION          = '_build_hooks_trigger';
 const BUILD_HOOK_SECRET_FILE_PATH        = WP_CONTENT_DIR . '/uploads/private/secrets.json';
@@ -246,6 +247,7 @@ function circle_ci_pipeline( $id ) {
 function circle_ci_pipelines() {
 	$token = get_circle_ci_token();
 	$repo  = get_circle_ci_repo();
+	$builds = get_option(BUILD_HOOK_CIRCLECI_BUILDS, []);
 
 	if ( ! $token || ! $repo ) {
 		return [];
@@ -284,6 +286,7 @@ function circle_ci_pipelines() {
 			$pipeline_data     = json_decode( $pipeline_response->getBody()->getContents(), true );
 			if ( $pipeline_data['items'] ) {
 				foreach ( $pipeline_data['items'] as $key => $pipeline_item ) {
+
 					$created = new \DateTime( $pipeline_item['created_at'] );
 					$stopped = new \DateTime( $pipeline_item['stopped_at'] );
 					$now     = new \DateTime();
@@ -298,9 +301,14 @@ function circle_ci_pipelines() {
 						$format .= '%h hours, ';
 					}
 
+					$pipeline_id = $pipeline_item['pipeline_id'];
+
+					$trigger = array_key_exists($pipeline_id,  $builds) ? $builds[$pipeline_id] : [ 'user'=> 'N/A', 'env'=> 'N/A'];
+
 					$duration    = $stopped->diff( $created );
 					$workflows[] = [
 						'id'         => $pipeline_item['id'],
+						'trigger'    => $trigger,
 						'url'        => circle_ci_worklflow_link( $pipeline_item['pipeline_number'], $pipeline_item['id'] ),
 						'name'       => $pipeline_item['name'],
 						'status'     => $pipeline_item['status'],
@@ -526,6 +534,7 @@ function build_hooks() {
 				<thead>
 					<tr>
 						<th>Status</th>
+						<th>Trigger</th>
 						<th>Name</th>
 						<th>Started</th>
 						<th>Duration</th>
@@ -540,6 +549,9 @@ function build_hooks() {
 											<?php echo esc_html( $workflow['status'] ); ?>
 										</a>
 									</span>
+								</td>
+								<td>
+									<?php echo esc_html( $workflow['trigger']['user'] ); ?> | <?php echo esc_html( $workflow['trigger']['env'] ); ?>
 								</td>
 								<td>
 									<a target="_blank" href="<?php echo esc_url( $workflow['url'] ); ?>">
@@ -756,7 +768,16 @@ function trigger_build( $build_options = [] ) {
 	try {
 		$response = $client->post( $url, $options );
 		$data     = json_decode( $response->getBody()->getContents(), true );
-		update_option( BUILD_HOOK_CIRCLECI_WORKFLOW, $data['id'] );
+		$buildId = $data['id'];
+		update_option( BUILD_HOOK_CIRCLECI_WORKFLOW, $buildId );
+
+		$builds = get_option(BUILD_HOOK_CIRCLECI_BUILDS, []);
+		$current_user = wp_get_current_user();
+		$builds[$buildId] = [
+			'user' => $current_user->user_login,
+			'env' => !empty($_ENV['PANTHEON_ENVIRONMENT']) ? $_ENV['PANTHEON_ENVIRONMENT'] : 'local',
+		];
+		update_option( BUILD_HOOK_CIRCLECI_BUILDS, $builds );
 	} catch ( \Throwable $th ) {
 		$result = new WP_Error( 'broke', __( 'Invalid POST executed. Check the entered  web-hook, token and project-name values.', 'build_hooks' ) );
 		return $result->get_error_message();
